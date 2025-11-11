@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+target/
+out/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# Generated files
+coverage/
+.nyc_output/
+*.min.js
+*.min.css
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (if you want to ignore it)
+docs/
+
+# Java files (Prettier doesn't format Java)
+*.java
+*.class
+
+# Database
+*.db
+*.sql
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+
+# Images and media
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.mp4
+*.mov
+
+# Fonts
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Lock files (optional - some teams format these)
+# package-lock.json
+# yarn.lock
+

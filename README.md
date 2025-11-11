@@ -69,13 +69,13 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 
 ## ⚙️ **Technology Stack**
 
-| Layer            | Tech                                    |
-| ---------------- | --------------------------------------- |
-| **Frontend**     | React 18, TypeScript, Tailwind CSS      |
-| **Backend**      | Java (Spring Boot or Java SE)           |
-| **Database**     | MySQL/PostgreSQL or in-memory           |
-| **Communication**| REST API                                |
-| **Testing**      | JUnit (Java), Jest (Frontend)           |
+| Layer             | Tech                                 |
+| ----------------- | ------------------------------------ |
+| **Frontend**      | React 19.2, TypeScript, Tailwind CSS |
+| **Backend**       | Java (Spring Boot or Java SE)        |
+| **Database**      | PostgreSQL 15+                       |
+| **Communication** | REST API                             |
+| **Testing**       | JUnit (Java), Jest (Frontend)        |
 
 ---
 
@@ -134,12 +134,12 @@ npm run dev
 
 ## 🔬 **Concurrency Solutions**
 
-| Challenge                            | Solution                                    |
-| ------------------------------------ | ------------------------------------------- |
-| **Race Condition on Seat Selection** | Pessimistic lock with TTL (30s)             |
-| **Stale Seat Map**                   | WebSocket/polling for real-time updates     |
-| **Partial Failure**                  | Transactions with rollback                  |
-| **Simultaneous Baggage Updates**     | Atomic counters with synchronized blocks    |
+| Challenge                            | Solution                                 |
+| ------------------------------------ | ---------------------------------------- |
+| **Race Condition on Seat Selection** | Pessimistic lock with TTL (30s)          |
+| **Stale Seat Map**                   | WebSocket/polling for real-time updates  |
+| **Partial Failure**                  | Transactions with rollback               |
+| **Simultaneous Baggage Updates**     | Atomic counters with synchronized blocks |
 
 > **Petri Net diagram and detailed implementation** → [Plan](./docs/plan/airport_kiosk_plan.md)
 
@@ -147,11 +147,11 @@ npm run dev
 
 ## ✅ **Testing**
 
-| Type        | Tool      | Target                    |
-| ----------- | --------- | ------------------------- |
-| Unit        | JUnit/Jest| Service layer coverage    |
-| Integration | JUnit     | End-to-end check-in flow  |
-| Load        | Manual    | 50-100 concurrent kiosks |
+| Type        | Tool       | Target                   |
+| ----------- | ---------- | ------------------------ |
+| Unit        | JUnit/Jest | Service layer coverage   |
+| Integration | JUnit      | End-to-end check-in flow |
+| Load        | Manual     | 50-100 concurrent kiosks |
 
 ---
 
@@ -166,25 +166,25 @@ npm run dev
 
 ## 🎓 **PRG4201E LO3 Alignment**
 
-| LO3 Requirement                 | Evidence                          |
-| ------------------------------- | --------------------------------- |
+| LO3 Requirement                 | Evidence                                 |
+| ------------------------------- | ---------------------------------------- |
 | **Synchronization Mechanisms**  | Pessimistic locking, synchronized blocks |
-| **Real-Time Data Distribution** | WebSocket/polling mechanism       |
-| **Petri Net Modeling**          | Included in plan                  |
-| **Workload Matrix**             | 50-100 kiosks, peak load          |
-| **Code Extracts**               | Backend Java code in plan          |
+| **Real-Time Data Distribution** | WebSocket/polling mechanism              |
+| **Petri Net Modeling**          | Included in plan                         |
+| **Workload Matrix**             | 50-100 kiosks, peak load                 |
+| **Code Extracts**               | Backend Java code in plan                |
 
 ---
 
 ## 📈 **Current Status**
 
-| Phase                    | Status                            |
-| ------------------------ | --------------------------------- |
-| Documentation & Planning | ✅ Complete                       |
-| Backend Development      | ⏳ In Progress                    |
-| Frontend Development     | ⏳ In Progress                    |
-| Testing                  | ⏳ Planned                        |
-| Final Submission         | 🎯 Week 7                         |
+| Phase                    | Status         |
+| ------------------------ | -------------- |
+| Documentation & Planning | ✅ Complete    |
+| Backend Development      | ⏳ In Progress |
+| Frontend Development     | ⏳ In Progress |
+| Testing                  | ⏳ Planned     |
+| Final Submission         | 🎯 Week 7      |
 
 ---
 

@@ -1,0 +1,246 @@
+# ============================================
+# Airport Check-In Kiosk System - .gitignore
+# ============================================
+
+# ============================================
+# Java / Maven / Spring Boot
+# ============================================
+*.class
+*.log
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle (if used)
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ============================================
+# Node.js / npm / Frontend
+# ============================================
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+dist-ssr/
+*.local
+build/
+.next/
+out/
+.nuxt/
+.vuepress/dist/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Package manager lock files (optional - some teams commit these)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ============================================
+# IDEs and Editors
+# ============================================
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ============================================
+# Operating System Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# Database
+# ============================================
+# PostgreSQL
+*.sql.backup
+*.sql.bak
+*.dump
+
+# H2 Database files
+*.db
+*.mv.db
+*.trace.db
+
+# ============================================
+# Logs and Temporary Files
+# ============================================
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+*.bak
+*.cache
+
+# Application logs
+logs/
+*.log.*
+
+# ============================================
+# Testing
+# ============================================
+# Coverage reports
+coverage/
+*.lcov
+.nyc_output/
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Test results
+test-results/
+test-output/
+*.test.log
+
+# ============================================
+# Build Tools
+# ============================================
+# Vite
+.vite/
+
+# ============================================
+# Documentation Build
+# ============================================
+# Generated documentation
+docs/_build/
+site/
+
+# ============================================
+# Miscellaneous
+# ============================================
+# Backup files
+*.backup
+*.old
+*.orig
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# ============================================
+# Project Specific
+# ============================================
+# Application properties with sensitive data
+application-local.properties
+application-secret.properties
+
+# Generated files
+generated/
+.gen/
+
+# Documentation files
+docs/
+*.md
+!README.md
+
+# Docker (if used)
+docker-compose.override.yml
+
+# ============================================
+# Keep these files (negation patterns)
+# ============================================
+!README.md
+!LICENSE
+!.gitignore
+!.gitattributes
+
