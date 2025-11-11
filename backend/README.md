@@ -4,20 +4,20 @@ Spring Boot backend application with concurrency control for the Airport Check-I
 
 ## Technology Stack
 
-- **Java 21** (LTS)
-- **Spring Boot 3.4.1**
-- **PostgreSQL 17+**
-- **Spring Data JPA**
-- **Spring WebSocket** (STOMP)
-- **Flyway** (Database Migrations)
-- **Lombok** (Code Generation)
-- **Maven** (Build Tool)
+- **Java 21** (LTS) - Programming language
+- **Spring Boot 3.4.1** - Application framework
+- **PostgreSQL 17+** - Database
+- **Spring Data JPA** - Data access layer
+- **Spring WebSocket** (STOMP) - Real-time communication
+- **Flyway 11.0** - Database migrations
+- **Lombok 1.18.34** - Code generation
+- **Maven 3.10+** - Build tool
 
 ## Prerequisites
 
-- Java JDK 21 (LTS version)
-- Maven 3.10+
-- PostgreSQL 17+ (or use H2 for testing)
+- **Java JDK 21** (LTS version) - **REQUIRED**
+- **Maven 3.10+**
+- **PostgreSQL 17+**
 
 ## Setup Instructions
 
@@ -35,6 +35,7 @@ CREATE DATABASE airport_kiosk;
 # Create user (optional)
 CREATE USER kiosk_user WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE airport_kiosk TO kiosk_user;
+\q
 ```
 
 ### 2. Configure Database
@@ -43,26 +44,27 @@ Update `src/main/resources/application.properties` with your database credential
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/airport_kiosk
-spring.datasource.username=postgres
+spring.datasource.username=your_username
 spring.datasource.password=your_password
 ```
 
 ### 3. Set Java 21
 
-**Important**: Maven must use Java 21. Set JAVA_HOME before building:
+**CRITICAL**: Maven must use Java 21. Set JAVA_HOME before building:
 
 ```bash
-# Set Java 21
+# macOS Homebrew
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+
 # Or use the helper script:
 source ./set-java21.sh
 
 # Verify Java version
-java -version  # Should show Java 21.0.9
-mvn -version   # Should show Java version: 21.0.9
+java -version  # Should show Java 21.0.x
+mvn -version   # Should show Java version: 21.0.x
 ```
 
-**To make it permanent**, add to your `~/.zshrc`:
+**To make it permanent**, add to your `~/.zshrc` or `~/.bashrc`:
 ```bash
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21
 export PATH="$JAVA_HOME/bin:$PATH"
@@ -83,7 +85,7 @@ java -jar target/kiosk-1.0.0.jar
 
 The application will start on `http://localhost:8080`
 
-### 4. Database Migrations
+### 5. Database Migrations
 
 Flyway will automatically run migrations on startup. To run manually:
 
@@ -100,45 +102,84 @@ backend/
 │   │   ├── java/com/airport/kiosk/
 │   │   │   ├── AirportKioskApplication.java
 │   │   │   ├── config/          # Configuration classes
+│   │   │   │   ├── CorsConfig.java
+│   │   │   │   ├── JacksonConfig.java
+│   │   │   │   └── WebSocketConfig.java
 │   │   │   ├── controller/      # REST API controllers
+│   │   │   │   ├── BaggageController.java
+│   │   │   │   ├── BoardingPassController.java
+│   │   │   │   ├── BookingController.java
+│   │   │   │   ├── HealthController.java
+│   │   │   │   └── SeatController.java
 │   │   │   ├── service/         # Business logic with concurrency control
+│   │   │   │   ├── BaggageService.java
+│   │   │   │   ├── BoardingPassService.java
+│   │   │   │   ├── BookingService.java
+│   │   │   │   └── SeatService.java
 │   │   │   ├── repository/      # JPA repositories
+│   │   │   │   ├── BaggageRepository.java
+│   │   │   │   ├── BookingRepository.java
+│   │   │   │   ├── FlightRepository.java
+│   │   │   │   └── SeatRepository.java
 │   │   │   ├── model/           # Entity classes
+│   │   │   │   ├── BaggageRecord.java
+│   │   │   │   ├── Booking.java
+│   │   │   │   ├── Flight.java
+│   │   │   │   └── Seat.java
 │   │   │   ├── dto/             # Data Transfer Objects
+│   │   │   │   ├── ApiResponse.java
+│   │   │   │   ├── BaggageCheckInRequest.java
+│   │   │   │   ├── BookingSearchRequest.java
+│   │   │   │   ├── SeatAssignmentResponse.java
+│   │   │   │   ├── SeatConfirmRequest.java
+│   │   │   │   └── SeatLockRequest.java
 │   │   │   └── exception/       # Custom exceptions
+│   │   │       ├── BookingNotFoundException.java
+│   │   │       ├── FlightNotFoundException.java
+│   │   │       ├── GlobalExceptionHandler.java
+│   │   │       └── SeatNotFoundException.java
 │   │   └── resources/
 │   │       ├── application.properties
 │   │       └── db/migration/   # Flyway migration scripts
+│   │           ├── V1__Initial_schema.sql
+│   │           └── V2__Insert_sample_data.sql
 │   └── test/                    # Test classes
 └── pom.xml
 ```
 
 ## API Endpoints
 
+### Health Check
+- `GET /api/health` - Service health status
+
 ### Booking Endpoints
-- `POST /api/bookings/search` - Search booking by reference or passport
-- `GET /api/bookings/{bookingId}` - Get booking details
+- `POST /api/bookings/search` - Search booking by reference or passport (case-insensitive)
+  - Request body: `{ "bookingReference": "BK001" }` or `{ "passportNumber": "P12345678" }`
+- `GET /api/bookings/{bookingId}` - Get booking details (case-insensitive)
 
 ### Seat Endpoints
-- `GET /api/flights/{flightId}/seats` - Get seat map
+- `GET /api/flights/{flightId}/seats` - Get seat map with available count
 - `GET /api/flights/{flightId}/seats/assignments` - Get seat assignments with passenger details
 - `POST /api/flights/{flightId}/seats/{seatId}/lock` - Lock a seat (30s TTL)
+  - Request body: `{ "sessionId": "session-123" }`
 - `POST /api/flights/{flightId}/seats/{seatId}/confirm` - Confirm seat selection (auto-releases old seats)
-- `DELETE /api/flights/{flightId}/seats/{seatId}/unlock` - Release seat lock
+  - Request body: `{ "bookingId": "BK001", "sessionId": "session-123" }`
+- `DELETE /api/flights/{flightId}/seats/{seatId}/unlock?sessionId={sessionId}` - Release seat lock
 
 ### Baggage Endpoints
-- `POST /api/bookings/{bookingId}/baggage` - Check in baggage
-- `GET /api/flights/{flightId}/baggage/count` - Get baggage count
+- `POST /api/bookings/{bookingId}/baggage` - Check in baggage (case-insensitive booking lookup)
+  - Request body: `{ "weight": 23.5, "count": 2 }`
+- `GET /api/flights/{flightId}/baggage/count` - Get baggage count for a flight
 
 ### Boarding Pass Endpoints
-- `POST /api/bookings/{bookingId}/boarding-pass` - Generate boarding pass
-- `GET /api/bookings/{bookingId}/boarding-pass/pdf` - Download PDF
+- `POST /api/bookings/{bookingId}/boarding-pass` - Generate boarding pass (case-insensitive)
+- `GET /api/bookings/{bookingId}/boarding-pass/pdf` - Download boarding pass PDF
 
 ## WebSocket Endpoints
 
-- WebSocket URL: `ws://localhost:8080/ws`
-- Topics:
-  - `/topic/flights/{flightId}/seats` - Seat status updates
+- **WebSocket URL:** `ws://localhost:8080/ws`
+- **Topics:**
+  - `/topic/flights/{flightId}/seats` - Seat status updates (LOCKED, RESERVED, AVAILABLE)
   - `/topic/flights/{flightId}/baggage` - Baggage count updates
 
 ## Concurrency Features
@@ -150,6 +191,7 @@ backend/
 - **Real-time Updates**: WebSocket broadcasts seat status changes
 - **Seat Replacement**: Automatically releases old seats when booking confirms a new one
 - **One Seat Per Booking**: Ensures each booking has only one reserved seat per flight
+- **Case-Insensitive Matching**: All booking lookups use UPPER() for case-insensitive queries
 
 ### Baggage Counting
 - **Atomic Operations**: Uses `synchronized` methods and atomic SQL increments
@@ -160,6 +202,7 @@ backend/
 - **Case-Insensitive Search**: Booking references and passport numbers are normalized
 - **Consistent Storage**: All booking IDs stored in uppercase for consistency
 - **Null Safety**: Comprehensive null checks and validation
+- **Trim & Normalize**: All inputs are trimmed and normalized before processing
 
 ## Testing
 
@@ -173,9 +216,14 @@ mvn test -Dtest=SeatServiceTest
 
 ## Troubleshooting
 
+### Java Version Issues
+If you see compilation errors:
+1. Verify Java version: `java -version` (should be 21)
+2. Set JAVA_HOME: `export JAVA_HOME=/opt/homebrew/opt/openjdk@21`
+3. Verify Maven uses Java 21: `mvn -version`
+
 ### Lombok Not Working
 If you see compilation errors about missing getters/setters:
-
 1. **IDE Setup**: Install Lombok plugin in your IDE (IntelliJ IDEA / Eclipse)
 2. **Enable Annotation Processing**: In IDE settings, enable annotation processing
 3. **Maven**: Lombok should work automatically with Maven, but ensure annotation processing is enabled
@@ -184,6 +232,7 @@ If you see compilation errors about missing getters/setters:
 - Verify PostgreSQL is running: `pg_isready`
 - Check database credentials in `application.properties`
 - Ensure database exists: `psql -U postgres -l | grep airport_kiosk`
+- Check Flyway migration status: `mvn flyway:info`
 
 ### Port Already in Use
 Change the port in `application.properties`:
@@ -197,8 +246,17 @@ server.port=8081
 - **Lock TTL**: Seat locks expire after 30 seconds automatically
 - **WebSocket**: Real-time updates broadcast to all connected clients
 - **Database**: Uses PostgreSQL with Flyway for schema management
+- **Case-Insensitive Queries**: All booking lookups use UPPER() for case-insensitive matching
+- **Seat Replacement**: When confirming a new seat, old reserved seats are automatically released
+- **Normalization**: Booking IDs are normalized to uppercase for consistency
+
+## Sample Data
+
+The migration script `V2__Insert_sample_data.sql` includes:
+- **Flights**: FL001, FL002, FL003
+- **Bookings**: BK001, BK002, BK003
+- **Seats**: Multiple seats per flight (Economy, Business, First class)
 
 ## License
 
 This project is part of the Airport Check-In Kiosk System assignment.
-

@@ -11,9 +11,6 @@
 > **A real-time self-service airport check-in kiosk system**  
 > Demonstrates **concurrency control**, **synchronization**, and **real-time data integrity** — aligned with **PRG4201E LO3 (Concurrent & Real-Time Systems)**.
 
-![System Overview](./assests/image/Animated%20demo%20of%20kiosk%20flow.gif)  
-_Animated demo of kiosk flow: Booking search → Seat selection → Boarding pass generation._
-
 </div>
 
 ---
@@ -56,152 +53,243 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 - **⚡ Atomic Baggage Counters** - Synchronized increments with REPEATABLE_READ isolation
 - **🧾 Boarding Pass Generation** - QR code generation with printable format
 - **🛠️ Fault Tolerance** - Comprehensive error handling and recovery
-- **🔍 Case-Insensitive Search** - Booking reference and passport number validation
-- **🔄 Seat Replacement** - Automatic release of old seats when booking new ones
+- **🔍 Case-Insensitive Search** - Booking reference and passport number validation (uppercase normalization)
+- **🔄 Seat Replacement** - Automatic release of old seats when booking new ones (one seat per booking)
 - **📊 Seat Assignments View** - Real-time passenger manifest with seat assignments
 - **✅ Input Validation** - Frontend and backend validation with proper normalization
-
----
-
-## 🏗️ **High-Level Architecture**
-
-![Architecture Diagram](./assests/image/architecture_diagram.png)
-
-> **Full architecture, sequence diagrams, Petri Nets, and DB schemas** → [`docs/plan/airport_kiosk_plan.md`](./docs/plan/airport_kiosk_plan.md)
+- **🔐 Thread-Safe Operations** - Synchronized methods and database transactions
 
 ---
 
 ## ⚙️ **Technology Stack**
 
-| Layer             | Tech                                 |
-| ----------------- | ------------------------------------ |
-| **Frontend**      | React 19.2, TypeScript, Tailwind CSS |
-| **Backend**       | Java 17 (Spring Boot)                |
-| **Database**      | PostgreSQL 15+                       |
-| **Communication** | REST API                             |
-| **Testing**       | JUnit (Java), Jest (Frontend)        |
+| Layer                | Technology                                |
+| -------------------- | ----------------------------------------- |
+| **Frontend**         | React 19.2, TypeScript 5.9, Vite 7        |
+| **Frontend UI**      | Tailwind CSS 3.4, Lucide React            |
+| **State Management** | Zustand 5.0                               |
+| **Backend**          | Java 21, Spring Boot 3.4.1                |
+| **Database**         | PostgreSQL 17+                            |
+| **ORM**              | Spring Data JPA, Hibernate                |
+| **Migrations**       | Flyway 11.0                               |
+| **WebSocket**        | Spring WebSocket (STOMP)                  |
+| **Build Tool**       | Maven 3.10+ (Backend), npm 10+ (Frontend) |
+| **Communication**    | REST API + WebSocket                      |
 
 ---
 
-## 🚀 **Getting Started**
+## 🚀 **How to Run the Application**
 
 ### **Prerequisites**
 
-- **Backend**: Java JDK 17 (required) and Maven
-- **Frontend**: Node.js LTS (`v20+`)
+- **Java JDK 21** (LTS version) - Required for backend
+- **Node.js 22+** (LTS version) - Required for frontend
+- **PostgreSQL 17+** - Database
+- **Maven 3.10+** - Backend build tool
+- **npm 10+** - Frontend package manager
 
-### **Setup**
-
-#### **Quick Start (Recommended)**
-
-Run everything with a single command:
+### **Step 1: Database Setup**
 
 ```bash
-git clone https://github.com/TheToriqul/Airport-Check-In-Kiosk-System.git
-cd Airport-Check-In-Kiosk-System
-./app.sh
+# Start PostgreSQL (if not running)
+# macOS with Homebrew:
+brew services start postgresql@17
+
+# Create database
+psql -U postgres
+CREATE DATABASE airport_kiosk;
+\q
 ```
 
-This script will:
+### **Step 2: Configure Database Connection**
 
-- ✅ Check prerequisites (Java 17+, Node.js)
-- ✅ Start PostgreSQL database (if not running)
-- ✅ Create database if it doesn't exist
-- ✅ Start backend server (port 8080)
-- ✅ Start frontend server (port 5173)
-- ✅ Handle cleanup on exit (Ctrl+C)
+Update `backend/src/main/resources/application.properties` with your PostgreSQL credentials:
 
-#### **Manual Setup**
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/airport_kiosk
+spring.datasource.username=your_username
+spring.datasource.password=your_password
+```
 
-If you prefer to run services separately:
-
-**Note**: Ensure Java 17 is installed and set as `JAVA_HOME` before running Maven commands.
+### **Step 3: Start Backend**
 
 ```bash
-# Backend (requires Java 17)
 cd backend
-# Set JAVA_HOME to Java 17 if not already set
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)  # macOS
-# Or: export JAVA_HOME=/opt/homebrew/opt/openjdk@17  # Homebrew
-mvn install
-mvn spring-boot:run
 
-# Frontend (in separate terminal)
+# Set Java 21 (IMPORTANT: Maven requires Java 21)
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21  # macOS Homebrew
+# Or use the helper script:
+source ./set-java21.sh
+
+# Verify Java version
+java -version  # Should show Java 21
+
+# Install dependencies and build
+mvn clean install
+
+# Run the application
+mvn spring-boot:run
+```
+
+**Backend will start on:** `http://localhost:8080`
+
+**Note:** To make Java 21 permanent, add to `~/.zshrc` or `~/.bashrc`:
+
+```bash
+export JAVA_HOME=/opt/homebrew/opt/openjdk@21
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+### **Step 4: Start Frontend**
+
+Open a **new terminal**:
+
+```bash
 cd frontend
+
+# Install dependencies (first time only)
 npm install
+
+# Start development server
 npm run dev
 ```
 
-> **Full setup guide** → [Implementation Plan](./docs/plan/airport_kiosk_plan.md)
+**Frontend will start on:** `http://localhost:5173`
+
+### **Step 5: Access the Application**
+
+1. Open your browser: `http://localhost:5173`
+2. The application will automatically connect to the backend
+3. Test with sample data:
+   - **Booking Reference:** `BK001` (case-insensitive)
+   - **Passport Number:** `P12345678`
+
+### **Quick Test**
+
+Run the connection test script:
+
+```bash
+./test-connection.sh
+```
 
 ---
 
 ## 📂 **Project Structure**
 
 ```
-├── backend/              # Java backend
+Airport-Check-In-Kiosk-System/
+├── backend/                    # Spring Boot Backend
 │   ├── src/
-│   │   ├── main/java/
-│   │   │   ├── controller/  # REST endpoints
-│   │   │   ├── service/     # Business logic
-│   │   │   ├── model/       # Data models
-│   │   │   └── dao/         # Database access
-│   │   └── test/
-│   └── pom.xml
-├── frontend/             # React + TypeScript
+│   │   ├── main/
+│   │   │   ├── java/com/airport/kiosk/
+│   │   │   │   ├── controller/      # REST API controllers
+│   │   │   │   ├── service/         # Business logic with concurrency
+│   │   │   │   ├── repository/      # JPA repositories
+│   │   │   │   ├── model/           # Entity classes
+│   │   │   │   ├── dto/             # Data Transfer Objects
+│   │   │   │   ├── exception/       # Custom exceptions
+│   │   │   │   └── config/          # Configuration (CORS, WebSocket, etc.)
+│   │   │   └── resources/
+│   │   │       ├── application.properties
+│   │   │       └── db/migration/    # Flyway migrations
+│   │   └── test/                    # Test classes
+│   ├── pom.xml                      # Maven dependencies
+│   ├── set-java21.sh               # Java 21 setup script
+│   └── README.md                    # Backend documentation
+│
+├── frontend/                   # React Frontend
 │   ├── src/
-│   │   ├── components/   # UI components
-│   │   ├── services/     # API calls
-│   │   └── hooks/        # React hooks
-│   └── package.json
-└── docs/
-    ├── assignment_requirements.md
-    └── plan/airport_kiosk_plan.md
+│   │   ├── components/         # React components
+│   │   │   ├── BookingSearch.tsx
+│   │   │   ├── SeatMap.tsx
+│   │   │   ├── BaggageCheckIn.tsx
+│   │   │   ├── BoardingPass.tsx
+│   │   │   ├── FlightDetailsPage.tsx
+│   │   │   └── ...
+│   │   ├── services/           # API and WebSocket services
+│   │   │   ├── api.ts
+│   │   │   └── websocket.ts
+│   │   ├── store/              # Zustand state management
+│   │   │   └── kioskStore.ts
+│   │   ├── types/              # TypeScript definitions
+│   │   └── App.tsx
+│   ├── package.json
+│   ├── vite.config.ts
+│   └── README.md               # Frontend documentation
+│
+├── docs/                       # Documentation
+│   ├── assignment_requirements/
+│   └── plan/
+│
+├── test-connection.sh          # Connection test script
+├── README.md                   # This file
+└── START.md                    # Quick start guide
 ```
+
+---
+
+## 🔌 **API Endpoints**
+
+### **Health Check**
+
+- `GET /api/health` - Service health status
+
+### **Booking Endpoints**
+
+- `POST /api/bookings/search` - Search booking by reference or passport (case-insensitive)
+- `GET /api/bookings/{bookingId}` - Get booking details (case-insensitive)
+
+### **Seat Endpoints**
+
+- `GET /api/flights/{flightId}/seats` - Get seat map for a flight
+- `GET /api/flights/{flightId}/seats/assignments` - Get seat assignments with passenger details
+- `POST /api/flights/{flightId}/seats/{seatId}/lock` - Lock a seat (30s TTL)
+- `POST /api/flights/{flightId}/seats/{seatId}/confirm` - Confirm seat selection (auto-releases old seats)
+- `DELETE /api/flights/{flightId}/seats/{seatId}/unlock?sessionId={sessionId}` - Release seat lock
+
+### **Baggage Endpoints**
+
+- `POST /api/bookings/{bookingId}/baggage` - Check in baggage (case-insensitive booking lookup)
+- `GET /api/flights/{flightId}/baggage/count` - Get baggage count for a flight
+
+### **Boarding Pass Endpoints**
+
+- `POST /api/bookings/{bookingId}/boarding-pass` - Generate boarding pass (case-insensitive)
+- `GET /api/bookings/{bookingId}/boarding-pass/pdf` - Download boarding pass PDF
+
+---
+
+## 🌐 **WebSocket Endpoints**
+
+- **WebSocket URL:** `ws://localhost:8080/ws`
+- **Topics:**
+  - `/topic/flights/{flightId}/seats` - Real-time seat status updates
+  - `/topic/flights/{flightId}/baggage` - Real-time baggage count updates
 
 ---
 
 ## 🔬 **Concurrency Solutions**
 
-| Challenge                            | Solution                                 |
-| ------------------------------------ | ---------------------------------------- |
-| **Race Condition on Seat Selection** | Pessimistic lock with TTL (30s)          |
-| **Stale Seat Map**                   | WebSocket/polling for real-time updates  |
-| **Partial Failure**                  | Transactions with rollback               |
-| **Simultaneous Baggage Updates**     | Atomic counters with synchronized blocks |
-
-> **Petri Net diagram and detailed implementation** → [Plan](./docs/plan/airport_kiosk_plan.md)
-
----
-
-## ✅ **Testing**
-
-| Type        | Tool       | Target                   |
-| ----------- | ---------- | ------------------------ |
-| Unit        | JUnit/Jest | Service layer coverage   |
-| Integration | JUnit      | End-to-end check-in flow |
-| Load        | Manual     | 50-100 concurrent kiosks |
-
----
-
-## 📑 **Documentation Map**
-
-| Document                  | Path                                                                                                                   |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Assignment Brief & Rubric | [`docs/assignment_requirements/assignment_requirements.md`](./docs/assignment_requirements/assignment_requirements.md) |
-| **Full Technical Plan**   | [`docs/plan/airport_kiosk_plan.md`](./docs/plan/airport_kiosk_plan.md)                                                 |
+| Challenge                            | Solution                                               |
+| ------------------------------------ | ------------------------------------------------------ |
+| **Race Condition on Seat Selection** | Pessimistic lock with TTL (30s) + synchronized methods |
+| **Stale Seat Map**                   | WebSocket/STOMP for real-time updates                  |
+| **Partial Failure**                  | Database transactions with rollback                    |
+| **Simultaneous Baggage Updates**     | Atomic SQL increments + REPEATABLE_READ isolation      |
+| **Multiple Seats Per Booking**       | Automatic seat replacement on confirm                  |
+| **Case-Sensitivity Issues**          | Case-insensitive queries with normalization            |
 
 ---
 
 ## 🎓 **PRG4201E LO3 Alignment**
 
-| LO3 Requirement                 | Evidence                                 |
-| ------------------------------- | ---------------------------------------- |
-| **Synchronization Mechanisms**  | Pessimistic locking, synchronized blocks |
-| **Real-Time Data Distribution** | WebSocket/polling mechanism              |
-| **Petri Net Modeling**          | Included in plan                         |
-| **Workload Matrix**             | 50-100 kiosks, peak load                 |
-| **Code Extracts**               | Backend Java code in plan                |
+| LO3 Requirement                 | Evidence                                                        |
+| ------------------------------- | --------------------------------------------------------------- |
+| **Synchronization Mechanisms**  | Pessimistic locking, synchronized blocks, database transactions |
+| **Real-Time Data Distribution** | WebSocket/STOMP mechanism                                       |
+| **Petri Net Modeling**          | Included in plan                                                |
+| **Workload Matrix**             | 50-100 kiosks, peak load                                        |
+| **Code Extracts**               | Backend Java code in plan                                       |
 
 ---
 
@@ -216,6 +304,7 @@ npm run dev
 | Real-Time Updates        | ✅ Complete |
 | Input Validation         | ✅ Complete |
 | Seat Management          | ✅ Complete |
+| Seat Assignments API     | ✅ Complete |
 | Testing                  | ⏳ Planned  |
 | Final Submission         | 🎯 Week 7   |
 
