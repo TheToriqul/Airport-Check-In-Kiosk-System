@@ -161,9 +161,13 @@ $RECYCLE.BIN/
 *.bak
 *.cache
 
-# Application logs
+# Application-specific log files
 logs/
 *.log.*
+backend.log
+backend-startup.log
+backend-test.log
+frontend.log
 
 # ============================================
 # Testing
@@ -187,12 +191,6 @@ test-output/
 # Vite
 .vite/
 
-# ============================================
-# Documentation Build
-# ============================================
-# Generated documentation
-docs/_build/
-site/
 
 # ============================================
 # Miscellaneous
@@ -228,7 +226,7 @@ application-secret.properties
 generated/
 .gen/
 
-# Documentation files
+# Documentation - ignore all docs and markdown files except README.md
 docs/
 *.md
 !README.md
@@ -237,10 +235,18 @@ docs/
 docker-compose.override.yml
 
 # ============================================
+# Runtime and Process Files
+# ============================================
+# PID files from app.sh
+.backend.pid
+.frontend.pid
+*.pid
+
+# ============================================
 # Keep these files (negation patterns)
 # ============================================
-!README.md
 !LICENSE
 !.gitignore
 !.gitattributes
+
 
