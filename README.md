@@ -86,7 +86,7 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 - **Node.js 22+** (LTS version) - Required for frontend
 - **PostgreSQL 17+** - Database
 - **Maven 3.10+** - Backend build tool
-- **npm 10+** - Frontend package manager
+- **npm 10+** - Frontend package manager (comes with Node.js)
 
 ### **Step 1: Database Setup**
 

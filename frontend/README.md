@@ -17,8 +17,13 @@ Modern, responsive React frontend for the Airport Check-In Kiosk System with rea
 
 ## Prerequisites
 
-- **Node.js 22+** (LTS version)
-- **npm 10+** or yarn 4.0+
+- **Node.js 18.18+ or 20.9+** (Node.js 22+ LTS recommended)
+  - _Note: While React runs in the browser, Node.js is required for:_
+    - Running the Vite development server (`npm run dev`)
+    - Installing npm packages (`npm install`)
+    - Building the production bundle (`npm run build`)
+    - Running build tools (TypeScript compiler, Vite, etc.)
+- **npm 10+** (comes bundled with Node.js) or yarn 4.0+
 
 ## Getting Started
 
@@ -172,6 +177,7 @@ frontend/
 The frontend communicates with the backend through:
 
 ### REST API (via `services/api.ts`)
+
 - Booking search and retrieval
 - Seat map and assignments
 - Seat locking and confirmation
@@ -179,6 +185,7 @@ The frontend communicates with the backend through:
 - Boarding pass generation
 
 ### WebSocket (via `services/websocket.ts`)
+
 - Real-time seat status updates
 - Real-time baggage count updates
 - Automatic reconnection on disconnect
@@ -204,21 +211,25 @@ Uses **Zustand** for global state management:
 ## Key Features
 
 ### Case-Insensitive Input Handling
+
 - Booking references are automatically converted to uppercase
 - Passport numbers preserve their original case
 - All inputs are trimmed before sending to API
 
 ### Real-Time Updates
+
 - WebSocket connection for live seat map updates
 - Automatic reconnection on connection loss
 - Optimistic UI updates with server confirmation
 
 ### Error Handling
+
 - Comprehensive error messages
 - Network error handling
 - Graceful degradation when backend is unavailable
 
 ### Responsive Design
+
 - Mobile-friendly interface
 - Touch-optimized controls
 - Adaptive layouts for different screen sizes
