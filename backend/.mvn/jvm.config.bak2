@@ -1,0 +1,3 @@
+# JVM arguments for Maven builds
+# Note: JAVA_HOME should be set via environment or .mvn/maven.config
+

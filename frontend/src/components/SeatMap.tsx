@@ -1,5 +1,19 @@
 import clsx from 'clsx';
-import { ArrowLeft, Check, Lock, Plane, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  Check,
+  Clock,
+  Lock,
+  Mail,
+  Phone,
+  Plane,
+  Square,
+  Ticket,
+  User,
+  X,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import logo from '../assets/image/logo.png';
 import { seatApi } from '../services/api';
@@ -45,18 +59,26 @@ export default function SeatMap() {
 
     // Subscribe to seat updates via WebSocket
     wsService.connect();
-    wsService.subscribeToSeatUpdates(flight.flightId, (event) => {
+    const handleSeatUpdate = (event: { seatId: string; status: string }) => {
       const currentSeats = useKioskStore.getState().seats;
       const updatedSeat = currentSeats.find((s) => s.seatId === event.seatId);
       if (updatedSeat) {
-        updateSeat({ ...updatedSeat, seatStatus: event.status });
+        updateSeat({ ...updatedSeat, seatStatus: event.status as Seat['seatStatus'] });
         // If the selected seat was released by another user, clear selection
         const currentSelectedSeat = useKioskStore.getState().selectedSeat;
         if (currentSelectedSeat?.seatId === event.seatId && event.status === 'AVAILABLE') {
           setSelectedSeat(null);
         }
       }
-    });
+    };
+
+    wsService.subscribeToSeatUpdates(flight.flightId, handleSeatUpdate);
+
+    // Cleanup: Note - WebSocket service manages subscriptions internally
+    // We don't need to unsubscribe here as the service handles it
+    return () => {
+      // Component cleanup handled by WebSocket service
+    };
   }, [flight, setSeats, setLoading, setError, updateSeat, setSelectedSeat]);
 
   const handleSeatClick = async (seat: Seat) => {
@@ -141,28 +163,58 @@ export default function SeatMap() {
     }
   };
 
-  // Group seats by class and row
-  const groupedSeats = seats.reduce((acc, seat) => {
-    const row = seat.seatNumber.match(/\d+/)?.[0] || '0';
-    const classKey = seat.seatClass;
-    if (!acc[classKey]) acc[classKey] = {};
-    if (!acc[classKey][row]) acc[classKey][row] = [];
-    acc[classKey][row].push(seat);
-    return acc;
-  }, {} as Record<string, Record<string, Seat[]>>);
+  // Group seats by class and row, and identify seat positions
+  const groupedSeats = seats.reduce(
+    (acc, seat) => {
+      const row = seat.seatNumber.match(/\d+/)?.[0] || '0';
+      const classKey = seat.seatClass;
+      if (!acc[classKey]) acc[classKey] = {};
+      if (!acc[classKey][row]) acc[classKey][row] = [];
+      acc[classKey][row].push(seat);
+      return acc;
+    },
+    {} as Record<string, Record<string, Seat[]>>
+  );
+
+  // Helper function to determine seat position (window, middle, aisle)
+  const getSeatPosition = (seatNumber: string, rowSeats: Seat[]): 'window' | 'middle' | 'aisle' => {
+    const sortedSeats = [...rowSeats].sort((a, b) => a.seatNumber.localeCompare(b.seatNumber));
+    const index = sortedSeats.findIndex((s) => s.seatNumber === seatNumber);
+    const total = sortedSeats.length;
+
+    if (index === 0 || index === total - 1) return 'window';
+    if (total <= 3) return 'middle';
+    // For typical configurations: A/B are window, C/D/E/F are middle/aisle depending on config
+    const letter = seatNumber.slice(-1);
+    if (['A', 'F'].includes(letter)) return 'window';
+    if (['C', 'D'].includes(letter)) return 'middle';
+    return 'aisle';
+  };
+
+  // Check if there's an aisle in the row (typically between C-D or D-E)
+  const hasAisle = (rowSeats: Seat[]): number => {
+    const sortedSeats = [...rowSeats].sort((a, b) => a.seatNumber.localeCompare(b.seatNumber));
+    if (sortedSeats.length <= 3) return -1;
+    // Typical configuration: aisle between C-D or D-E
+    const letters = sortedSeats.map((s) => s.seatNumber.slice(-1));
+    const cIndex = letters.indexOf('C');
+    const dIndex = letters.indexOf('D');
+    if (cIndex >= 0 && dIndex >= 0 && dIndex === cIndex + 1) return cIndex + 0.5;
+    return -1;
+  };
 
   return (
     <div className="min-h-full p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="card mb-6 animate-slide-down">
-          <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+        {/* Header - Professional Airport Kiosk Style */}
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-6 mb-6 border-2 border-gray-200/50">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
             <button
               onClick={handleBack}
-              className="btn-secondary flex items-center gap-2 hover:gap-3 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-all duration-200 hover:shadow-md"
             >
               <ArrowLeft className="w-5 h-5" />
-              Back to Search
+              Back
             </button>
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -170,196 +222,456 @@ export default function SeatMap() {
                 <img
                   src={logo}
                   alt="Airport Logo"
-                  className="h-14 w-auto object-contain relative z-10"
+                  className="h-16 w-auto object-contain relative z-10"
                 />
               </div>
               <div className="text-right">
-                <h1 className="text-3xl font-extrabold gradient-text">Select Your Seat</h1>
-                <p className="text-gray-600 font-medium mt-1">
-                  {flight?.flightNumber} • {flight?.departureAirport} → {flight?.arrivalAirport}
-                </p>
+                <h1 className="text-3xl font-extrabold text-gray-900">Select Your Seat</h1>
+                <div className="flex items-center gap-2 mt-1 text-gray-600 font-medium">
+                  <Plane className="w-5 h-5 text-primary-600" />
+                  <span className="font-semibold">{flight?.flightNumber}</span>
+                  <ArrowRight className="w-4 h-4" />
+                  <span>{flight?.departureAirport}</span>
+                  <span className="text-primary-600">→</span>
+                  <span>{flight?.arrivalAirport}</span>
+                </div>
               </div>
             </div>
           </div>
-
-          {booking && (
-            <div className="bg-gradient-to-r from-primary-50 via-blue-50 to-cyan-50 p-5 rounded-2xl border-2 border-primary-200/50 shadow-md">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex-1 min-w-[200px]">
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Passenger</p>
-                  <p className="text-lg font-bold text-gray-900">{booking.passengerName}</p>
-                </div>
-                <div className="h-12 w-px bg-primary-200"></div>
-                <div className="flex-1 min-w-[200px]">
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                    Booking Reference
-                  </p>
-                  <p className="text-lg font-bold text-primary-700">{booking.bookingId}</p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Seat Map */}
-        <div className="card animate-slide-up">
-          <div className="mb-8 text-center">
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-primary-100 to-blue-100 px-6 py-3 rounded-full shadow-lg border-2 border-primary-200/50">
-              <Plane className="w-6 h-6 text-primary-700 animate-float" />
-              <span className="text-primary-700 font-bold text-lg">Cockpit</span>
-            </div>
-          </div>
-
-          {Object.entries(groupedSeats).map(([seatClass, rows]) => (
-            <div key={seatClass} className="mb-10 last:mb-0">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                <h3 className="text-2xl font-extrabold gradient-text capitalize px-4">
-                  {seatClass} Class
-                </h3>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+        {/* Two Column Layout */}
+        <div className="flex flex-col lg:flex-row gap-6 items-stretch">
+          {/* Left Column - Seat Map */}
+          <div className="flex-1 lg:w-2/3 flex flex-col">
+            {/* Seat Map - Realistic Airplane Cabin Layout */}
+            <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-8 border-2 border-gray-200/50 flex-1 flex flex-col">
+              {/* Cockpit Indicator */}
+              <div className="mb-8 text-center">
+                <div className="inline-flex items-center gap-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-8 py-4 rounded-xl shadow-2xl border-2 border-gray-700">
+                  <Plane className="w-7 h-7" />
+                  <span className="font-bold text-xl tracking-wide">COCKPIT</span>
+                </div>
               </div>
-              <div className="space-y-3">
-                {Object.entries(rows)
-                  .sort(([a], [b]) => parseInt(a) - parseInt(b))
-                  .map(([row, rowSeats]) => (
-                    <div key={row} className="flex items-center gap-3 group">
-                      <div className="w-14 text-center font-bold text-gray-700 text-lg bg-gray-100/50 py-2 rounded-lg">
-                        {row}
-                      </div>
-                      <div className="flex-1 flex gap-2 justify-center flex-wrap">
-                        {rowSeats
-                          .sort((a, b) => a.seatNumber.localeCompare(b.seatNumber))
-                          .map((seat, index) => (
-                            <button
-                              key={seat.seatId}
-                              onClick={() => handleSeatClick(seat)}
-                              disabled={
-                                seat.seatStatus !== 'AVAILABLE' ||
-                                lockingSeat === seat.seatId ||
-                                isLoading
-                              }
-                              className={clsx(
-                                'w-14 h-14 rounded-xl font-bold text-base transition-all duration-300 flex items-center justify-center relative',
-                                getSeatClass(seat),
-                                (seat.seatStatus !== 'AVAILABLE' || lockingSeat) &&
-                                  'cursor-not-allowed',
-                                'hover:z-20'
-                              )}
-                              title={`${seat.seatNumber} - ${seat.seatClass} Class`}
-                              style={{ animationDelay: `${index * 0.05}s` }}
-                            >
-                              {seat.seatStatus === 'LOCKED' && seat.lockedBy !== sessionId && (
-                                <Lock className="w-5 h-5 animate-pulse" />
-                              )}
-                              {seat.seatStatus === 'RESERVED' && <X className="w-5 h-5" />}
-                              {seat.seatId === selectedSeat?.seatId && (
-                                <Check className="w-6 h-6 animate-bounce-slow" />
-                              )}
-                              {seat.seatStatus === 'AVAILABLE' &&
-                                seat.seatId !== selectedSeat?.seatId && (
-                                  <span className="relative z-10">{seat.seatNumber.slice(-1)}</span>
-                                )}
-                            </button>
-                          ))}
+
+              {/* Window Indicators */}
+              <div className="flex justify-between items-center mb-4 px-4">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Square className="w-5 h-5" />
+                  <span className="text-sm font-semibold">Window</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-600">
+                  <span className="text-sm font-semibold">Window</span>
+                  <Square className="w-5 h-5" />
+                </div>
+              </div>
+
+              {Object.entries(groupedSeats).map(([seatClass, rows]) => {
+                const classColors = {
+                  FIRST: 'from-purple-50 to-indigo-50 border-purple-200',
+                  BUSINESS: 'from-blue-50 to-cyan-50 border-blue-200',
+                  ECONOMY: 'from-gray-50 to-slate-50 border-gray-200',
+                };
+                const classBg =
+                  classColors[seatClass as keyof typeof classColors] || classColors.ECONOMY;
+
+                return (
+                  <div key={seatClass} className="mb-8 last:mb-0">
+                    {/* Class Header */}
+                    <div className={`bg-gradient-to-r ${classBg} p-4 rounded-xl border-2 mb-6`}>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-2xl font-extrabold text-gray-900 capitalize flex items-center gap-3">
+                          <div
+                            className={`w-3 h-3 rounded-full ${
+                              seatClass === 'FIRST'
+                                ? 'bg-purple-600'
+                                : seatClass === 'BUSINESS'
+                                  ? 'bg-blue-600'
+                                  : 'bg-gray-600'
+                            }`}
+                          ></div>
+                          {seatClass} Class
+                        </h3>
+                        <div className="text-sm text-gray-600 font-semibold">
+                          {
+                            seats.filter(
+                              (s) => s.seatClass === seatClass && s.seatStatus === 'AVAILABLE'
+                            ).length
+                          }{' '}
+                          seats available
+                        </div>
                       </div>
                     </div>
-                  ))}
-              </div>
-            </div>
-          ))}
-        </div>
 
-        {/* Legend */}
-        <div className="card mt-6 bg-gradient-to-r from-gray-50 to-blue-50 border-gray-200/50">
-          <h3 className="font-bold text-gray-900 mb-4 text-lg">Legend</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl hover:bg-white/80 transition-colors">
-              <div className="w-10 h-10 rounded-xl seat-available flex items-center justify-center font-bold text-green-800">
-                A
+                    {/* Seat Rows */}
+                    <div className="space-y-2">
+                      {Object.entries(rows)
+                        .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                        .map(([row, rowSeats]) => {
+                          const sortedSeats = [...rowSeats].sort((a, b) =>
+                            a.seatNumber.localeCompare(b.seatNumber)
+                          );
+                          const aislePosition = hasAisle(rowSeats);
+
+                          return (
+                            <div key={row} className="flex items-center gap-2 group">
+                              {/* Row Number */}
+                              <div className="w-12 text-center font-bold text-gray-800 text-base bg-gray-100 py-3 rounded-lg border border-gray-300">
+                                {row}
+                              </div>
+
+                              {/* Seats with Aisle */}
+                              <div className="flex-1 flex items-center gap-1.5 justify-center">
+                                {sortedSeats.map((seat, index) => {
+                                  const position = getSeatPosition(seat.seatNumber, rowSeats);
+                                  const shouldShowAisleAfter =
+                                    aislePosition >= 0 && Math.floor(aislePosition) === index;
+
+                                  return (
+                                    <div key={seat.seatId} className="relative flex items-center">
+                                      <button
+                                        onClick={() => handleSeatClick(seat)}
+                                        disabled={
+                                          seat.seatStatus !== 'AVAILABLE' ||
+                                          lockingSeat === seat.seatId ||
+                                          isLoading
+                                        }
+                                        className={clsx(
+                                          'w-12 h-12 rounded-lg font-bold text-sm transition-all duration-200 flex items-center justify-center relative group/seat',
+                                          getSeatClass(seat),
+                                          (seat.seatStatus !== 'AVAILABLE' || lockingSeat) &&
+                                            'cursor-not-allowed',
+                                          'hover:z-20',
+                                          position === 'window' &&
+                                            seat.seatStatus === 'AVAILABLE' &&
+                                            'ring-2 ring-blue-300/50'
+                                        )}
+                                        title={`${seat.seatNumber} - ${seat.seatClass} Class - ${position}`}
+                                      >
+                                        {seat.seatStatus === 'LOCKED' &&
+                                          seat.lockedBy !== sessionId && (
+                                            <Lock className="w-4 h-4 animate-pulse" />
+                                          )}
+                                        {seat.seatStatus === 'RESERVED' && (
+                                          <X className="w-4 h-4" />
+                                        )}
+                                        {seat.seatId === selectedSeat?.seatId && (
+                                          <Check className="w-5 h-5" />
+                                        )}
+                                        {seat.seatStatus === 'AVAILABLE' &&
+                                          seat.seatId !== selectedSeat?.seatId && (
+                                            <span className="text-xs font-bold">
+                                              {seat.seatNumber.slice(-1)}
+                                            </span>
+                                          )}
+                                      </button>
+                                      {/* Aisle Indicator after this seat */}
+                                      {shouldShowAisleAfter && (
+                                        <div className="w-6 h-12 flex items-center justify-center mx-0.5">
+                                          <div className="w-0.5 h-full bg-gray-400 rounded-full"></div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Exit Row Indicators (if applicable) */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span className="font-semibold">Emergency Exit</span>
+                  </div>
+                </div>
               </div>
-              <span className="text-sm font-semibold text-gray-700">Available</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl hover:bg-white/80 transition-colors">
-              <div className="w-10 h-10 rounded-xl seat-selected flex items-center justify-center">
-                <Check className="w-5 h-5 text-white" />
+
+              {/* Seat Legend - Horizontal Layout */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="font-bold text-gray-900 mb-4 text-lg flex items-center gap-2">
+                  <div className="w-1 h-5 bg-primary-600 rounded-full"></div>
+                  Seat Legend
+                </h3>
+                <div className="flex flex-wrap items-center gap-4 justify-center">
+                  {/* Available */}
+                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg border-2 border-green-200">
+                    <div className="w-10 h-10 rounded-lg seat-available flex items-center justify-center font-bold text-green-800 shadow-md text-xs">
+                      A
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">Available</p>
+                    </div>
+                  </div>
+                  {/* Selected */}
+                  <div className="flex items-center gap-2 p-3 bg-primary-50 rounded-lg border-2 border-primary-200">
+                    <div className="w-10 h-10 rounded-lg seat-selected flex items-center justify-center shadow-lg">
+                      <Check className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">Selected</p>
+                    </div>
+                  </div>
+                  {/* Locked */}
+                  <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg border-2 border-yellow-200">
+                    <div className="w-10 h-10 rounded-lg seat-locked flex items-center justify-center shadow-md">
+                      <Lock className="w-4 h-4 text-yellow-800" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">Locked</p>
+                    </div>
+                  </div>
+                  {/* Reserved */}
+                  <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg border-2 border-red-200">
+                    <div className="w-10 h-10 rounded-lg seat-reserved flex items-center justify-center shadow-md">
+                      <X className="w-4 h-4 text-red-800" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">Reserved</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span className="text-sm font-semibold text-gray-700">Selected</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl hover:bg-white/80 transition-colors">
-              <div className="w-10 h-10 rounded-xl seat-locked flex items-center justify-center">
-                <Lock className="w-5 h-5 text-yellow-800" />
-              </div>
-              <span className="text-sm font-semibold text-gray-700">Locked</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl hover:bg-white/80 transition-colors">
-              <div className="w-10 h-10 rounded-xl seat-reserved flex items-center justify-center">
-                <X className="w-5 h-5 text-red-800" />
-              </div>
-              <span className="text-sm font-semibold text-gray-700">Reserved</span>
             </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        {selectedSeat && (
-          <div className="card mt-6 bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-2 border-green-300/50 shadow-2xl animate-slide-up">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Check className="w-8 h-8 text-white" />
+          {/* Right Column - Passenger Details, Legend, and Confirmation */}
+          <div className="w-full lg:w-1/3 flex flex-col">
+            {/* Passenger Details */}
+            {booking && (
+              <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-cyan-50 p-6 rounded-xl border-2 border-blue-200/50 shadow-lg flex-1 flex flex-col">
+                <div className="mb-4">
+                  <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2 mb-4">
+                    <User className="w-6 h-6 text-primary-600" />
+                    Passenger Details
+                  </h2>
                 </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                    Selected Seat
-                  </p>
-                  <p className="text-3xl font-extrabold text-gray-900 mb-1">
-                    {selectedSeat.seatNumber}
-                  </p>
-                  <p className="text-sm font-semibold text-primary-700 capitalize">
-                    {selectedSeat.seatClass} Class
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleConfirm}
-                disabled={isLoading}
-                className="btn-primary text-lg px-10 py-5 disabled:opacity-50 flex items-center gap-2 min-w-[200px] justify-center"
-              >
-                {isLoading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
+
+                <div className="space-y-4 flex-1">
+                  {/* Passenger Name */}
+                  <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                    <div className="flex items-center gap-2 text-gray-600 mb-2">
+                      <User className="w-4 h-4" />
+                      <p className="text-xs font-semibold uppercase">Passenger Name</p>
+                    </div>
+                    <p className="text-lg font-bold text-gray-900">{booking.passengerName}</p>
+                  </div>
+
+                  {/* Booking Reference */}
+                  <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                    <div className="flex items-center gap-2 text-gray-600 mb-2">
+                      <Ticket className="w-4 h-4" />
+                      <p className="text-xs font-semibold uppercase">Booking Reference</p>
+                    </div>
+                    <p className="text-lg font-bold text-primary-700 font-mono">
+                      {booking.bookingId}
+                    </p>
+                  </div>
+
+                  {/* Current Seat Assignment */}
+                  {(() => {
+                    const currentSeat = seats.find(
+                      (s) =>
+                        s.bookingId &&
+                        s.bookingId.toUpperCase() === booking.bookingId.toUpperCase() &&
+                        (s.seatStatus === 'RESERVED' || s.seatStatus === 'OCCUPIED')
+                    );
+                    return (
+                      <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <Plane className="w-4 h-4" />
+                          <p className="text-xs font-semibold uppercase">Current Seat</p>
+                        </div>
+                        {currentSeat ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl font-extrabold text-primary-700">
+                              {currentSeat.seatNumber}
+                            </span>
+                            <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded text-xs font-semibold capitalize">
+                              {currentSeat.seatClass.toLowerCase()}
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 italic">No seat assigned</p>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Passport Number */}
+                  {booking.passportNumber && (
+                    <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                      <div className="flex items-center gap-2 text-gray-600 mb-2">
+                        <Ticket className="w-4 h-4" />
+                        <p className="text-xs font-semibold uppercase">Passport Number</p>
+                      </div>
+                      <p className="text-lg font-semibold text-gray-900 font-mono">
+                        {booking.passportNumber}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Email */}
+                  {booking.email && (
+                    <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                      <div className="flex items-center gap-2 text-gray-600 mb-2">
+                        <Mail className="w-4 h-4" />
+                        <p className="text-xs font-semibold uppercase">Email</p>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900 break-all">{booking.email}</p>
+                    </div>
+                  )}
+
+                  {/* Phone */}
+                  {booking.phone && (
+                    <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                      <div className="flex items-center gap-2 text-gray-600 mb-2">
+                        <Phone className="w-4 h-4" />
+                        <p className="text-xs font-semibold uppercase">Phone</p>
+                      </div>
+                      <p className="text-sm font-medium text-gray-900">{booking.phone}</p>
+                    </div>
+                  )}
+
+                  {/* Booking Status */}
+                  <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                    <div className="flex items-center gap-2 text-gray-600 mb-2">
+                      <Calendar className="w-4 h-4" />
+                      <p className="text-xs font-semibold uppercase">Booking Status</p>
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        booking.bookingStatus === 'CONFIRMED'
+                          ? 'bg-green-100 text-green-800'
+                          : booking.bookingStatus === 'CHECKED_IN'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}
                     >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>Confirming...</span>
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-5 h-5" />
-                    <span>Confirm Selection</span>
-                  </>
+                      {booking.bookingStatus.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  {/* Flight Information */}
+                  {flight && (
+                    <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                      <div className="flex items-center gap-2 text-gray-600 mb-2">
+                        <Plane className="w-4 h-4" />
+                        <p className="text-xs font-semibold uppercase">Flight</p>
+                      </div>
+                      <p className="text-lg font-bold text-gray-900">{flight.flightNumber}</p>
+                      <p className="text-sm text-gray-600">
+                        {flight.departureAirport} → {flight.arrivalAirport}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Departure Time */}
+                  {flight && (
+                    <div className="bg-white/80 rounded-lg p-4 border border-gray-200/50">
+                      <div className="flex items-center gap-2 text-gray-600 mb-2">
+                        <Clock className="w-4 h-4" />
+                        <p className="text-xs font-semibold uppercase">Departure Time</p>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {new Date(flight.departureTime).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Confirmation Panel - Inside Passenger Details Card */}
+                {selectedSeat && (
+                  <div className="mt-6 pt-6 border-t-2 border-gray-300">
+                    <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 rounded-xl shadow-lg p-5 border-2 border-green-400/50">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-green-400 rounded-xl blur-md opacity-50"></div>
+                            <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg relative z-10">
+                              <Check className="w-7 h-7 text-white" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                              Selected Seat
+                            </p>
+                            <div className="flex items-baseline gap-2">
+                              <p className="text-2xl font-extrabold text-gray-900">
+                                {selectedSeat.seatNumber}
+                              </p>
+                              <span className="px-2 py-1 bg-white/80 rounded-lg text-xs font-bold text-primary-700 capitalize border border-primary-200">
+                                {selectedSeat.seatClass}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-1 font-medium">
+                              {(() => {
+                                const row = selectedSeat.seatNumber.match(/\d+/)?.[0] || '0';
+                                const rowSeats = groupedSeats[selectedSeat.seatClass]?.[row] || [];
+                                const position = getSeatPosition(selectedSeat.seatNumber, rowSeats);
+                                return (
+                                  position.charAt(0).toUpperCase() + position.slice(1) + ' Seat'
+                                );
+                              })()}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleConfirm}
+                          disabled={isLoading}
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-base px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center"
+                        >
+                          {isLoading ? (
+                            <>
+                              <svg
+                                className="animate-spin h-5 w-5 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                ></circle>
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
+                              </svg>
+                              <span>Confirming...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-5 h-5" />
+                              <span>Confirm Selection</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </button>
-            </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -1,11 +1,13 @@
 package com.airport.kiosk.service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
 import com.airport.kiosk.exception.BookingNotFoundException;
+import com.airport.kiosk.exception.FlightNotFoundException;
 import com.airport.kiosk.model.Booking;
 import com.airport.kiosk.model.Flight;
 import com.airport.kiosk.repository.BookingRepository;
@@ -38,7 +40,7 @@ public class BookingService {
         
         // Get flight details
         Flight flight = flightRepository.findByFlightId(booking.getFlightId())
-            .orElseThrow(() -> new RuntimeException("Flight not found: " + booking.getFlightId()));
+            .orElseThrow(() -> new FlightNotFoundException("Flight not found: " + booking.getFlightId()));
         
         Map<String, Object> result = new HashMap<>();
         result.put("booking", booking);
@@ -61,7 +63,18 @@ public class BookingService {
     public Flight getFlightByBookingId(String bookingId) {
         Booking booking = getBookingById(bookingId);
         return flightRepository.findByFlightId(booking.getFlightId())
-            .orElseThrow(() -> new RuntimeException("Flight not found: " + booking.getFlightId()));
+            .orElseThrow(() -> new FlightNotFoundException("Flight not found: " + booking.getFlightId()));
+    }
+    
+    /**
+     * Get all bookings for a flight
+     */
+    public List<Booking> getBookingsByFlightId(String flightId) {
+        // Verify flight exists
+        flightRepository.findByFlightId(flightId)
+            .orElseThrow(() -> new FlightNotFoundException("Flight not found: " + flightId));
+        
+        return bookingRepository.findByFlightId(flightId);
     }
 }
 

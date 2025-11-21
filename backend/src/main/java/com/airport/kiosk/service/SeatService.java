@@ -29,7 +29,6 @@ public class SeatService {
     private final SimpMessagingTemplate messagingTemplate;
     
     private static final long LOCK_TTL_SECONDS = 30; // 30 seconds TTL
-    private static final Object lockObject = new Object(); // For synchronized locking
     
     /**
      * Lock a seat with TTL. Thread-safe operation using synchronized block.

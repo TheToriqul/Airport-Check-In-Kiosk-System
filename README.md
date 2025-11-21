@@ -48,6 +48,8 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 
 ## ✨ **Key Features**
 
+### **Core Functionality**
+
 - **🔒 Concurrency-Safe Seat Selection** - Pessimistic locking with TTL-based locks (30s)
 - **🌐 Real-Time Seat Map Sync** - WebSocket/STOMP for instant updates across all kiosks
 - **⚡ Atomic Baggage Counters** - Synchronized increments with REPEATABLE_READ isolation
@@ -58,6 +60,13 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 - **📊 Seat Assignments View** - Real-time passenger manifest with seat assignments
 - **✅ Input Validation** - Frontend and backend validation with proper normalization
 - **🔐 Thread-Safe Operations** - Synchronized methods and database transactions
+
+### **Developer Experience**
+
+- **🛠️ Permanent Java 21 Setup** - Automatic Java version management with convenience scripts
+- **📝 Comprehensive Documentation** - Detailed setup guides and API documentation
+- **🚀 Quick Start Scripts** - One-command backend startup with `./run.sh`
+- **🔧 Shell Functions** - Easy Java version switching with `java21`/`java17` commands
 
 ---
 
@@ -82,10 +91,14 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 
 ### **Prerequisites**
 
-- **Java JDK 21** (LTS version) - Required for backend
-- **Node.js 22+** (LTS version) - Required for frontend
+- **Java JDK 21** (LTS version) - **REQUIRED** for backend
+  - Installation: `brew install openjdk@21` (macOS) or download from [Adoptium](https://adoptium.net/)
+  - ⚠️ **Important:** The project includes permanent fixes for Java 21 setup (see `backend/JAVA_SETUP.md`)
+- **Node.js 18.18+ or 20.9+** (Node.js 22+ LTS recommended) - Required for frontend
+  - Installation: `brew install node` (macOS) or download from [nodejs.org](https://nodejs.org/)
 - **PostgreSQL 17+** - Database
-- **Maven 3.10+** - Backend build tool
+  - Installation: `brew install postgresql@17` (macOS)
+- **Maven 3.10+** - Backend build tool (usually comes with Java setup)
 - **npm 10+** - Frontend package manager (comes with Node.js)
 
 ### **Step 1: Database Setup**
@@ -113,12 +126,31 @@ spring.datasource.password=your_password
 
 ### **Step 3: Start Backend**
 
+**⚠️ IMPORTANT:** This project requires **Java 21**. Multiple solutions are available:
+
+#### **Option 1: Use the Convenience Script (Recommended - Easiest)**
+
+```bash
+cd backend
+./run.sh                    # Automatically sets Java 21 and runs: mvn spring-boot:run
+```
+
+#### **Option 2: Use Shell Function (After first-time setup)**
+
+If you've already set up the shell functions (see below), simply use:
+
+```bash
+java21                      # Switch to Java 21
+cd backend
+mvn spring-boot:run
+```
+
+#### **Option 3: Manual Setup**
+
 ```bash
 cd backend
 
-# Set Java 21 (IMPORTANT: Maven requires Java 21)
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21  # macOS Homebrew
-# Or use the helper script:
+# Set Java 21 using the helper script
 source ./set-java21.sh
 
 # Verify Java version
@@ -133,12 +165,19 @@ mvn spring-boot:run
 
 **Backend will start on:** `http://localhost:8080`
 
-**Note:** To make Java 21 permanent, add to `~/.zshrc` or `~/.bashrc`:
+#### **🔧 First-Time Java 21 Setup (Permanent Fix)**
 
-```bash
-export JAVA_HOME=/opt/homebrew/opt/openjdk@21
-export PATH="$JAVA_HOME/bin:$PATH"
-```
+To permanently fix Java version issues, the project includes automatic setup:
+
+1. **Shell Functions** (automatically added to `~/.zshrc`):
+   - `java21` - Switch to Java 21
+   - `java17` - Switch back to Java 17 (default)
+
+2. **Convenience Script**: `backend/run.sh` - Automatically uses Java 21
+
+3. **For more details**, see: `backend/JAVA_SETUP.md`
+
+**Note:** If you haven't set up the shell functions yet, you can manually add Java 21 to your PATH or use `./run.sh` which works without any setup.
 
 ### **Step 4: Start Frontend**
 
@@ -172,6 +211,23 @@ Run the connection test script:
 ./test-connection.sh
 ```
 
+### **💡 Quick Start (All-in-One)**
+
+For the fastest setup, use the convenience scripts:
+
+```bash
+# Terminal 1: Backend (automatically uses Java 21)
+cd backend
+./run.sh
+
+# Terminal 2: Frontend
+cd frontend
+npm install  # First time only
+npm run dev
+```
+
+Then open: `http://localhost:5173`
+
 ---
 
 ## 📂 **Project Structure**
@@ -193,8 +249,13 @@ Airport-Check-In-Kiosk-System/
 │   │   │       ├── application.properties
 │   │   │       └── db/migration/    # Flyway migrations
 │   │   └── test/                    # Test classes
+│   ├── .mvn/                        # Maven project configuration
+│   │   ├── jvm.config               # JVM configuration
+│   │   └── maven.config             # Maven settings
 │   ├── pom.xml                      # Maven dependencies
+│   ├── run.sh                       # Convenience script (auto Java 21)
 │   ├── set-java21.sh               # Java 21 setup script
+│   ├── JAVA_SETUP.md               # Java 21 setup documentation
 │   └── README.md                    # Backend documentation
 │
 ├── frontend/                   # React Frontend
@@ -219,11 +280,15 @@ Airport-Check-In-Kiosk-System/
 │
 ├── docs/                       # Documentation
 │   ├── assignment_requirements/
-│   └── plan/
+│   ├── development/            # Development docs
+│   ├── guides/                 # Setup guides
+│   └── plan/                   # Project planning
 │
 ├── test-connection.sh          # Connection test script
-├── README.md                   # This file
-└── START.md                    # Quick start guide
+├── API_MISMATCHES.md          # API documentation
+├── SECURITY.md                 # Security documentation
+├── SETUP_COMPLETE.md          # Setup completion status
+└── README.md                   # This file
 ```
 
 ---
@@ -305,8 +370,49 @@ Airport-Check-In-Kiosk-System/
 | Input Validation         | ✅ Complete |
 | Seat Management          | ✅ Complete |
 | Seat Assignments API     | ✅ Complete |
+| Java 21 Setup Fix        | ✅ Complete |
 | Testing                  | ⏳ Planned  |
 | Final Submission         | 🎯 Week 7   |
+
+## 🔧 **Troubleshooting**
+
+### **Java Version Issues**
+
+If you encounter Java compilation errors:
+
+1. **Use the convenience script** (easiest):
+
+   ```bash
+   cd backend
+   ./run.sh
+   ```
+
+2. **Use the shell function**:
+
+   ```bash
+   java21  # Switch to Java 21
+   ```
+
+3. **Manual setup**:
+
+   ```bash
+   cd backend
+   source ./set-java21.sh
+   ```
+
+4. **For detailed help**, see: `backend/JAVA_SETUP.md`
+
+### **Database Connection Issues**
+
+- Ensure PostgreSQL is running: `brew services start postgresql@17`
+- Verify database exists: `psql -U postgres -l | grep airport_kiosk`
+- Check credentials in `backend/src/main/resources/application.properties`
+
+### **Frontend Connection Issues**
+
+- Ensure backend is running on `http://localhost:8080`
+- Check browser console for WebSocket connection errors
+- Verify CORS settings if accessing from different origin
 
 ---
 

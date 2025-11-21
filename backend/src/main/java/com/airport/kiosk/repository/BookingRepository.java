@@ -1,5 +1,6 @@
 package com.airport.kiosk.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,5 +23,8 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     // Case-insensitive search using native SQL with UPPER() function
     @Query(value = "SELECT * FROM bookings WHERE UPPER(passport_number) = UPPER(:passportNumber)", nativeQuery = true)
     Optional<Booking> findByPassportNumberIgnoreCase(@Param("passportNumber") String passportNumber);
+    
+    // Get all bookings for a flight
+    List<Booking> findByFlightId(String flightId);
 }
 

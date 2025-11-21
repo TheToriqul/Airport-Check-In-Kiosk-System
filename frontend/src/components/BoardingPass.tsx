@@ -1,12 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Download, Printer, Plane, Calendar, MapPin, User, CheckCircle } from 'lucide-react';
+import { CheckCircle, Download, Info, Plane, Printer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useEffect, useState } from 'react';
+import logo from '../assets/image/logo.png';
 import { boardingPassApi } from '../services/api';
 import { useKioskStore } from '../store/kioskStore';
-import logo from '../assets/image/logo.png';
 
 export default function BoardingPass() {
-  const { booking, flight, baggage, boardingPass, setBoardingPass, setLoading, setError, isLoading, reset } = useKioskStore();
+  const {
+    booking,
+    baggage,
+    boardingPass,
+    setBoardingPass,
+    setLoading,
+    setError,
+    isLoading,
+    reset,
+  } = useKioskStore();
   const [generated, setGenerated] = useState(false);
 
   useEffect(() => {
@@ -59,29 +68,33 @@ export default function BoardingPass() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-full flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mb-4"></div>
-          <p className="text-gray-600">Generating your boarding pass...</p>
+          <div className="relative inline-block mb-6">
+            <div className="absolute inset-0 bg-blue-400 rounded-full blur-xl opacity-50"></div>
+            <div className="relative inline-block animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600"></div>
+          </div>
+          <p className="text-lg font-semibold text-gray-700">Generating your boarding pass...</p>
+          <p className="text-sm text-gray-500 mt-2">Please wait a moment</p>
         </div>
       </div>
     );
@@ -89,192 +102,253 @@ export default function BoardingPass() {
 
   if (!boardingPass) {
     return (
-      <div className="min-h-full flex items-center justify-center">
-        <div className="card max-w-md text-center">
-          <p className="text-gray-600">Failed to generate boarding pass. Please try again.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-8 border-2 border-gray-200/50 max-w-md text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Info className="w-8 h-8 text-red-600" />
+          </div>
+          <p className="text-gray-700 font-semibold">Failed to generate boarding pass.</p>
+          <p className="text-sm text-gray-500 mt-2">Please try again or contact support.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-full p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+    <div className="min-h-screen bg-gray-100 p-4 print:p-0">
       <div className="max-w-4xl mx-auto">
         {/* Success Message */}
         {generated && (
-          <div className="card mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 animate-slide-up">
+          <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded-r shadow-sm print:hidden">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
               <div>
-                <h3 className="font-bold text-green-900">Check-In Complete!</h3>
-                <p className="text-sm text-green-700">Your boarding pass has been generated successfully.</p>
+                <h3 className="text-sm font-semibold text-green-900">Check-In Complete!</h3>
+                <p className="text-xs text-green-700 mt-0.5">
+                  Your boarding pass is ready. Please proceed to your gate.
+                </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Boarding Pass Card */}
-        <div className="card mb-6 print:shadow-none print:border-2 print:border-dashed print:border-gray-400">
-          <div className="bg-gradient-to-r from-primary-600 to-primary-800 text-white p-6 rounded-t-2xl -m-6 mb-6 print:bg-white print:text-black">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <img 
-                  src={logo} 
-                  alt="Airport Logo" 
-                  className="h-16 w-auto object-contain print:grayscale print:brightness-0"
-                />
-                <div>
-                  <h2 className="text-2xl font-bold mb-1">BOARDING PASS</h2>
-                  <p className="text-primary-100 print:text-gray-600">{flight?.flightNumber}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="bg-white/20 print:bg-transparent rounded-lg p-3 print:p-0">
-                  <QRCodeSVG 
-                    value={boardingPass.qrCode} 
-                    size={80}
-                    className="print:border-2 print:border-black"
+        {/* Boarding Pass - Professional Design */}
+        <div className="bg-white shadow-lg print:shadow-none border border-gray-200 print:border-0 overflow-hidden">
+          {/* Top Section - Header with QR Code */}
+          <div className="bg-blue-600 text-white print:bg-white print:text-black">
+            <div className="p-6 border-b-2 border-blue-700 print:border-gray-300">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                  <img
+                    src={logo}
+                    alt="Airline Logo"
+                    className="h-12 w-auto object-contain print:grayscale print:brightness-0"
                   />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Left Column */}
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center gap-2 text-gray-600 mb-1">
-                  <User className="w-4 h-4" />
-                  <span className="text-xs font-semibold uppercase">Passenger</span>
-                </div>
-                <p className="text-xl font-bold text-gray-900">{boardingPass.passengerName}</p>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 text-gray-600 mb-1">
-                  <Plane className="w-4 h-4" />
-                  <span className="text-xs font-semibold uppercase">Flight</span>
-                </div>
-                <p className="text-2xl font-bold text-gray-900">{boardingPass.flightNumber}</p>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 text-gray-600 mb-1">
-                  <MapPin className="w-4 h-4" />
-                  <span className="text-xs font-semibold uppercase">Route</span>
-                </div>
-                <div className="flex items-center gap-2">
                   <div>
-                    <p className="text-lg font-bold text-gray-900">{boardingPass.departureAirport}</p>
-                    <p className="text-sm text-gray-600">{formatTime(boardingPass.departureTime)}</p>
-                  </div>
-                  <div className="flex-1 text-center">
-                    <div className="border-t-2 border-dashed border-gray-300"></div>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold text-gray-900">{boardingPass.arrivalAirport}</p>
-                    <p className="text-sm text-gray-600">{formatTime(boardingPass.arrivalTime)}</p>
+                    <h1 className="text-2xl font-bold tracking-wide mb-1">BOARDING PASS</h1>
+                    <p className="text-sm font-semibold text-blue-100 print:text-gray-700 mb-1">
+                      {boardingPass.flightNumber}
+                    </p>
+                    <p className="text-xs font-medium text-blue-100 print:text-gray-600">
+                      {formatDate(boardingPass.departureTime)}
+                    </p>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-4">
-              <div>
-                <div className="flex items-center gap-2 text-gray-600 mb-1">
-                  <span className="text-xs font-semibold uppercase">Seat</span>
-                </div>
-                <p className="text-3xl font-bold text-primary-600">{boardingPass.seatNumber}</p>
-              </div>
-
-              <div>
-                <div className="flex items-center gap-2 text-gray-600 mb-1">
-                  <Calendar className="w-4 h-4" />
-                  <span className="text-xs font-semibold uppercase">Departure</span>
-                </div>
-                <p className="text-lg font-semibold text-gray-900">{formatDate(boardingPass.departureTime)}</p>
-                <p className="text-sm text-gray-600">{formatTime(boardingPass.departureTime)}</p>
-              </div>
-
-              {boardingPass.gate && (
-                <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
-                    <span className="text-xs font-semibold uppercase">Gate</span>
+                <div className="text-right flex-shrink-0">
+                  <div className="bg-white p-2.5 rounded print:bg-transparent print:p-0 inline-block">
+                    <QRCodeSVG
+                      value={boardingPass.qrCode}
+                      size={100}
+                      className="print:border print:border-black"
+                    />
                   </div>
-                  <p className="text-xl font-bold text-gray-900">{boardingPass.gate}</p>
-                </div>
-              )}
-
-              {boardingPass.boardingTime && (
-                <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
-                    <span className="text-xs font-semibold uppercase">Boarding</span>
-                  </div>
-                  <p className="text-lg font-semibold text-gray-900">{formatTime(boardingPass.boardingTime)}</p>
-                </div>
-              )}
-
-              {baggage && (
-                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                  <p className="text-xs font-semibold text-blue-800 uppercase mb-1">Baggage</p>
-                  <p className="text-sm text-blue-900">
-                    {baggage.baggageCount} bag(s) • {baggage.baggageWeight} kg
+                  <p className="text-xs font-medium mt-2 text-blue-100 print:text-gray-600">
+                    Scan at Gate
                   </p>
-                  <p className="text-xs text-blue-700 mt-1">Tag: {baggage.tagNumber}</p>
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
-          {/* QR Code for Mobile */}
-          <div className="mt-6 pt-6 border-t border-gray-200 text-center print:hidden">
-            <div className="inline-block bg-white p-4 rounded-lg border-2 border-gray-200">
-              <QRCodeSVG value={boardingPass.qrCode} size={120} />
+          {/* Main Content - Two Column Layout */}
+          <div className="p-6">
+            <div className="relative grid md:grid-cols-2 gap-8 border-b border-gray-200 pb-6 mb-6">
+              {/* Vertical Center Line */}
+              <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-0.5 border-l-2 border-dashed border-gray-400 transform -translate-x-1/2"></div>
+
+              {/* Left Column */}
+              <div className="space-y-5 relative z-10 flex flex-col">
+                {/* Passenger and Booking Reference in Same Row */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Passenger */}
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                      PASSENGER
+                    </p>
+                    <p className="text-base font-semibold text-gray-900">
+                      {boardingPass.passengerName}
+                    </p>
+                  </div>
+
+                  {/* Booking Reference */}
+                  {booking && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        BOOKING REFERENCE
+                      </p>
+                      <p className="text-base font-semibold text-gray-900 font-mono">
+                        {booking.bookingId}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Flight Details */}
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                      FLIGHT
+                    </p>
+                    <p className="text-base font-semibold text-gray-900">
+                      {boardingPass.flightNumber}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                      DATE
+                    </p>
+                    <p className="text-base font-semibold text-gray-900">
+                      {formatDate(boardingPass.departureTime)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Route */}
+                <div>
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    ROUTE
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <p className="text-xl font-bold text-gray-900 mb-1">
+                        {boardingPass.departureAirport}
+                      </p>
+                      <p className="text-sm text-gray-600 font-medium">
+                        {formatTime(boardingPass.departureTime)}
+                      </p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-10 border-t-2 border-dashed border-gray-400"></div>
+                      <Plane className="w-5 h-5 text-gray-500 mx-1.5" />
+                      <div className="w-10 border-t-2 border-dashed border-gray-400"></div>
+                    </div>
+                    <div className="flex-1 text-right">
+                      <p className="text-xl font-bold text-gray-900 mb-1">
+                        {boardingPass.arrivalAirport}
+                      </p>
+                      <p className="text-sm text-gray-600 font-medium">
+                        {formatTime(boardingPass.arrivalTime)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-5 relative z-10 flex flex-col">
+                {/* Seat Details and Baggage in Same Row */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Seat Details Section */}
+                  <div className="flex flex-col">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      SEAT DETAILS
+                    </p>
+                    <div className="bg-blue-50 border border-blue-200 rounded p-4 flex-1 flex flex-col justify-center">
+                      <p className="text-4xl font-bold text-blue-600 mb-1">
+                        {boardingPass.seatNumber}
+                      </p>
+                      <p className="text-xs text-gray-600 font-medium">Seat Assignment</p>
+                    </div>
+                  </div>
+
+                  {/* Baggage Info */}
+                  {baggage && (
+                    <div className="flex flex-col">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                        BAGGAGE
+                      </p>
+                      <div className="border border-gray-200 rounded p-4 flex-1 flex flex-col justify-center">
+                        <p className="text-sm font-semibold text-gray-900 mb-1">
+                          {baggage.baggageCount} bag(s) • {baggage.baggageWeight} kg
+                        </p>
+                        <p className="text-xs text-gray-600">Tag: {baggage.tagNumber}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Gate & Boarding Time */}
+                <div className="grid grid-cols-2 gap-6">
+                  {boardingPass.gate && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        GATE
+                      </p>
+                      <p className="text-xl font-bold text-gray-900">{boardingPass.gate}</p>
+                    </div>
+                  )}
+                  {boardingPass.boardingTime && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                        BOARDING
+                      </p>
+                      <p className="text-base font-semibold text-gray-900">
+                        {formatTime(boardingPass.boardingTime)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-2">Scan at gate</p>
+
+            {/* Bottom Section - Additional Info */}
+            <div className="text-xs text-gray-600">
+              <p className="font-bold mb-1.5">Important:</p>
+              <ul className="list-disc list-inside space-y-0.5">
+                <li>Arrive at gate 30 minutes before departure</li>
+                <li>Have boarding pass and ID ready</li>
+                {baggage && <li>Baggage tags attached to your bags</li>}
+              </ul>
+            </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="card print:hidden">
-          <div className="flex flex-wrap gap-4">
+        <div className="bg-white shadow-lg p-4 border border-gray-200 print:hidden mt-6">
+          <div className="flex flex-wrap gap-3">
             <button
               onClick={handlePrint}
-              className="btn-primary flex items-center gap-2 flex-1 min-w-[150px]"
+              className="flex-1 min-w-[140px] px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded text-sm transition-colors flex items-center justify-center gap-2"
             >
-              <Printer className="w-5 h-5" />
-              Print Boarding Pass
+              <Printer className="w-4 h-4" />
+              <span>Print</span>
             </button>
             <button
               onClick={handleDownload}
-              className="btn-secondary flex items-center gap-2 flex-1 min-w-[150px]"
+              className="flex-1 min-w-[140px] px-4 py-2.5 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded text-sm transition-colors flex items-center justify-center gap-2"
             >
-              <Download className="w-5 h-5" />
-              Download PDF
+              <Download className="w-4 h-4" />
+              <span>Download PDF</span>
             </button>
             <button
               onClick={handleNewCheckIn}
-              className="btn-secondary flex items-center gap-2 flex-1 min-w-[150px]"
+              className="flex-1 min-w-[140px] px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded text-sm transition-colors"
             >
               New Check-In
             </button>
           </div>
         </div>
-
-        {/* Instructions */}
-        <div className="card mt-6 bg-blue-50 border-blue-200 print:hidden">
-          <h3 className="font-semibold text-gray-900 mb-2">Important Information</h3>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li>• Please arrive at the gate at least 30 minutes before departure</li>
-            <li>• Keep your boarding pass and identification ready for security checks</li>
-            <li>• Your seat number is shown above - please proceed to your assigned seat</li>
-            {baggage && <li>• Baggage tags have been printed - attach them to your bags</li>}
-          </ul>
-        </div>
       </div>
     </div>
   );
 }
-

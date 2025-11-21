@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.airport.kiosk.dto.ApiResponse;
 import com.airport.kiosk.dto.BaggageCheckInRequest;
+import com.airport.kiosk.exception.BookingNotFoundException;
 import com.airport.kiosk.model.BaggageRecord;
 import com.airport.kiosk.repository.BookingRepository;
 import com.airport.kiosk.service.BaggageService;
@@ -36,7 +37,7 @@ public class BaggageController {
         try {
             // Get booking and flight ID (case-insensitive lookup)
             com.airport.kiosk.model.Booking booking = bookingRepository.findByBookingIdIgnoreCase(bookingId != null ? bookingId.trim() : "")
-                .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
+                .orElseThrow(() -> new BookingNotFoundException("Booking not found: " + bookingId));
             String normalizedBookingId = booking.getBookingId();
             String flightId = booking.getFlightId();
             
@@ -70,6 +71,16 @@ public class BaggageController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error(e.getMessage(), "BAGGAGE_COUNT_ERROR"));
+        }
+    }
+    
+    @GetMapping("/flights/{flightId}/baggage/debug")
+    public ResponseEntity<ApiResponse<Object>> getBaggageDebug(@PathVariable String flightId) {
+        try {
+            return baggageService.getBaggageDebug(flightId);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage(), "BAGGAGE_DEBUG_ERROR"));
         }
     }
 }

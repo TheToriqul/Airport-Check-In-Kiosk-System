@@ -7,6 +7,9 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.airport.kiosk.exception.BookingNotFoundException;
+import com.airport.kiosk.exception.FlightNotFoundException;
+import com.airport.kiosk.exception.SeatNotFoundException;
 import com.airport.kiosk.model.Booking;
 import com.airport.kiosk.model.Flight;
 import com.airport.kiosk.model.Seat;
@@ -29,17 +32,17 @@ public class BoardingPassService {
      */
     public Map<String, Object> generateBoardingPass(String bookingId) {
         Booking booking = bookingRepository.findByBookingIdIgnoreCase(bookingId != null ? bookingId.trim() : "")
-            .orElseThrow(() -> new RuntimeException("Booking not found: " + bookingId));
+            .orElseThrow(() -> new BookingNotFoundException("Booking not found: " + bookingId));
         
         Flight flight = flightRepository.findByFlightId(booking.getFlightId())
-            .orElseThrow(() -> new RuntimeException("Flight not found: " + booking.getFlightId()));
+            .orElseThrow(() -> new FlightNotFoundException("Flight not found: " + booking.getFlightId()));
         
         // Find seat for this booking (case-insensitive comparison)
         String normalizedBookingId = booking.getBookingId();
         Seat seat = seatRepository.findByFlightId(flight.getFlightId()).stream()
             .filter(s -> s.getBookingId() != null && s.getBookingId().equalsIgnoreCase(normalizedBookingId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("Seat not found for booking: " + bookingId));
+            .orElseThrow(() -> new SeatNotFoundException("Seat not found for booking: " + bookingId));
         
         // Generate boarding pass data
         Map<String, Object> boardingPass = new HashMap<>();

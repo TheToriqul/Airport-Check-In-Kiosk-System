@@ -1,49 +1,49 @@
+import { Home, Map, Menu, Plane, ShoppingBag, X } from 'lucide-react';
 import { useState } from 'react';
-import { Menu, X, Home, Plane, Map, ShoppingBag } from 'lucide-react';
-import { useKioskStore } from '../store/kioskStore';
 import logo from '../assets/image/logo.png';
+import { useKioskStore } from '../store/kioskStore';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { currentStep, reset, activePage, setActivePage } = useKioskStore();
+  const { reset, activePage, setActivePage } = useKioskStore();
 
   const menuItems = [
-    { 
-      id: 'home', 
-      label: 'Home', 
-      icon: Home, 
-      action: () => { 
+    {
+      id: 'home',
+      label: 'Home',
+      icon: Home,
+      action: () => {
         setActivePage(null);
-        reset(); 
-        setIsMenuOpen(false); 
-      }
+        reset();
+        setIsMenuOpen(false);
+      },
     },
-    { 
-      id: 'flight-details', 
-      label: 'Flight Info', 
-      icon: Plane, 
-      action: () => { 
+    {
+      id: 'flight-details',
+      label: 'Flight Info',
+      icon: Plane,
+      action: () => {
         setActivePage('flight-details');
-        setIsMenuOpen(false); 
-      } 
+        setIsMenuOpen(false);
+      },
     },
-    { 
-      id: 'terminal-map', 
-      label: 'Terminal Map', 
-      icon: Map, 
-      action: () => { 
+    {
+      id: 'terminal-map',
+      label: 'Terminal Map',
+      icon: Map,
+      action: () => {
         setActivePage('terminal-map');
-        setIsMenuOpen(false); 
-      } 
+        setIsMenuOpen(false);
+      },
     },
-    { 
-      id: 'services', 
-      label: 'Services', 
-      icon: ShoppingBag, 
-      action: () => { 
+    {
+      id: 'services',
+      label: 'Services',
+      icon: ShoppingBag,
+      action: () => {
         setActivePage('services');
-        setIsMenuOpen(false); 
-      } 
+        setIsMenuOpen(false);
+      },
     },
   ];
 
@@ -55,7 +55,6 @@ export default function Navigation() {
     return activePage === itemId;
   };
 
-
   return (
     <nav className="bg-white/90 backdrop-blur-md border-b border-gray-200/50 shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,9 +63,9 @@ export default function Navigation() {
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute inset-0 bg-primary-200/30 rounded-full blur-lg"></div>
-              <img 
-                src={logo} 
-                alt="Airport Logo" 
+              <img
+                src={logo}
+                alt="Airport Logo"
                 className="h-10 w-auto object-contain relative z-10"
               />
             </div>
@@ -104,11 +103,7 @@ export default function Navigation() {
             className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
       </div>
@@ -141,4 +136,3 @@ export default function Navigation() {
     </nav>
   );
 }
-
