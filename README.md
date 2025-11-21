@@ -53,11 +53,12 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 - **🔒 Concurrency-Safe Seat Selection** - Pessimistic locking with TTL-based locks (30s)
 - **🌐 Real-Time Seat Map Sync** - WebSocket/STOMP for instant updates across all kiosks
 - **⚡ Atomic Baggage Counters** - Synchronized increments with REPEATABLE_READ isolation
-- **🧾 Boarding Pass Generation** - QR code generation with printable format
+- **🧾 Boarding Pass Generation** - QR code generation with printable format, including airline and aircraft information
+- **✈️ Airline & Aircraft Information** - Complete flight details with airline names and aircraft types (e.g., Boeing 787-9, Airbus A350-900)
 - **🛠️ Fault Tolerance** - Comprehensive error handling and recovery
 - **🔍 Case-Insensitive Search** - Booking reference and passport number validation (uppercase normalization)
 - **🔄 Seat Replacement** - Automatic release of old seats when booking new ones (one seat per booking)
-- **📊 Seat Assignments View** - Real-time passenger manifest with seat assignments
+- **📊 Flight Details & Passenger Management** - Comprehensive flight information page with passenger details and boarding pass access
 - **✅ Input Validation** - Frontend and backend validation with proper normalization
 - **🔐 Thread-Safe Operations** - Synchronized methods and database transactions
 
@@ -65,7 +66,7 @@ Simulate **50–100+ concurrent kiosks** during peak hours with **zero double-bo
 
 - **🛠️ Permanent Java 21 Setup** - Automatic Java version management with convenience scripts
 - **📝 Comprehensive Documentation** - Detailed setup guides and API documentation
-- **🚀 Quick Start Scripts** - One-command backend startup with `./run.sh`
+- **🚀 Quick Start Scripts** - One-command application startup with `./app.sh` (or `app.bat` on Windows)
 - **🔧 Shell Functions** - Easy Java version switching with `java21`/`java17` commands
 
 ---
@@ -124,62 +125,68 @@ spring.datasource.username=your_username
 spring.datasource.password=your_password
 ```
 
-### **Step 3: Start Backend**
-
-**⚠️ IMPORTANT:** This project requires **Java 21**. Multiple solutions are available:
-
-#### **Option 1: Use the Convenience Script (Recommended - Easiest)**
+### **Step 3: Install Dependencies (First Time Only)**
 
 ```bash
-cd backend
-./run.sh                    # Automatically sets Java 21 and runs: mvn spring-boot:run
+# Install root dependencies (for running both services)
+npm install
+
+# Install frontend dependencies
+cd frontend
+npm install
+cd ..
 ```
 
-#### **Option 2: Use Shell Function (After first-time setup)**
+### **Step 4: Run the Application**
 
-If you've already set up the shell functions (see below), simply use:
+#### **🚀 Option 1: Run Both Services Together (Recommended - Easiest)**
+
+**Cross-platform solution - works on Mac, Linux, and Windows:**
 
 ```bash
-java21                      # Switch to Java 21
-cd backend
-mvn spring-boot:run
+# Mac/Linux:
+./app.sh
+
+# Windows:
+app.bat
+
+# Or using npm (works on all platforms):
+npm start
+# or
+npm run dev
 ```
 
-#### **Option 3: Manual Setup**
+This will automatically start both:
+
+- **Backend** on `http://localhost:8080`
+- **Frontend** on `http://localhost:5173`
+
+Press `Ctrl+C` to stop both services.
+
+#### **Option 2: Run Services Separately**
+
+**Start Backend:**
+
+**⚠️ IMPORTANT:** This project requires **Java 21**.
+
+##### **Option 2a: Use the Convenience Script (Recommended)**
 
 ```bash
 cd backend
+./run.sh                    # Automatically sets Java 21
+```
 
-# Set Java 21 using the helper script
+##### **Option 2b: Manual Setup**
+
+```bash
+cd backend
 source ./set-java21.sh
-
-# Verify Java version
-java -version  # Should show Java 21
-
-# Install dependencies and build
-mvn clean install
-
-# Run the application
 mvn spring-boot:run
 ```
 
 **Backend will start on:** `http://localhost:8080`
 
-#### **🔧 First-Time Java 21 Setup (Permanent Fix)**
-
-To permanently fix Java version issues, the project includes automatic setup:
-
-1. **Shell Functions** (automatically added to `~/.zshrc`):
-   - `java21` - Switch to Java 21
-   - `java17` - Switch back to Java 17 (default)
-
-2. **Convenience Script**: `backend/run.sh` - Automatically uses Java 21
-
-3. **For more details**, see: `backend/JAVA_SETUP.md`
-
-**Note:** If you haven't set up the shell functions yet, you can manually add Java 21 to your PATH or use `./run.sh` which works without any setup.
-
-### **Step 4: Start Frontend**
+##### **Option 2c: Start Frontend**
 
 Open a **new terminal**:
 
@@ -195,38 +202,14 @@ npm run dev
 
 **Frontend will start on:** `http://localhost:5173`
 
+---
+
 ### **Step 5: Access the Application**
 
 1. Open your browser: `http://localhost:5173`
-2. The application will automatically connect to the backend
-3. Test with sample data:
+2. Test with sample data:
    - **Booking Reference:** `BK001` (case-insensitive)
    - **Passport Number:** `P12345678`
-
-### **Quick Test**
-
-Run the connection test script:
-
-```bash
-./test-connection.sh
-```
-
-### **💡 Quick Start (All-in-One)**
-
-For the fastest setup, use the convenience scripts:
-
-```bash
-# Terminal 1: Backend (automatically uses Java 21)
-cd backend
-./run.sh
-
-# Terminal 2: Frontend
-cd frontend
-npm install  # First time only
-npm run dev
-```
-
-Then open: `http://localhost:5173`
 
 ---
 
@@ -234,185 +217,64 @@ Then open: `http://localhost:5173`
 
 ```
 Airport-Check-In-Kiosk-System/
-├── backend/                    # Spring Boot Backend
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/airport/kiosk/
-│   │   │   │   ├── controller/      # REST API controllers
-│   │   │   │   ├── service/         # Business logic with concurrency
-│   │   │   │   ├── repository/      # JPA repositories
-│   │   │   │   ├── model/           # Entity classes
-│   │   │   │   ├── dto/             # Data Transfer Objects
-│   │   │   │   ├── exception/       # Custom exceptions
-│   │   │   │   └── config/          # Configuration (CORS, WebSocket, etc.)
-│   │   │   └── resources/
-│   │   │       ├── application.properties
-│   │   │       └── db/migration/    # Flyway migrations
-│   │   └── test/                    # Test classes
-│   ├── .mvn/                        # Maven project configuration
-│   │   ├── jvm.config               # JVM configuration
-│   │   └── maven.config             # Maven settings
-│   ├── pom.xml                      # Maven dependencies
-│   ├── run.sh                       # Convenience script (auto Java 21)
-│   ├── set-java21.sh               # Java 21 setup script
-│   ├── JAVA_SETUP.md               # Java 21 setup documentation
-│   └── README.md                    # Backend documentation
+├── backend/                    # Spring Boot Backend (Java 21)
+│   ├── src/main/java/          # Source code
+│   ├── src/main/resources/     # Configuration & migrations
+│   ├── run.sh                  # Backend startup script
+│   └── README.md               # Backend documentation
 │
-├── frontend/                   # React Frontend
-│   ├── src/
-│   │   ├── components/         # React components
-│   │   │   ├── BookingSearch.tsx
-│   │   │   ├── SeatMap.tsx
-│   │   │   ├── BaggageCheckIn.tsx
-│   │   │   ├── BoardingPass.tsx
-│   │   │   ├── FlightDetailsPage.tsx
-│   │   │   └── ...
-│   │   ├── services/           # API and WebSocket services
-│   │   │   ├── api.ts
-│   │   │   └── websocket.ts
-│   │   ├── store/              # Zustand state management
-│   │   │   └── kioskStore.ts
-│   │   ├── types/              # TypeScript definitions
-│   │   └── App.tsx
-│   ├── package.json
-│   ├── vite.config.ts
+├── frontend/                   # React Frontend (TypeScript)
+│   ├── src/                    # Source code
 │   └── README.md               # Frontend documentation
 │
-├── docs/                       # Documentation
-│   ├── assignment_requirements/
-│   ├── development/            # Development docs
-│   ├── guides/                 # Setup guides
-│   └── plan/                   # Project planning
+├── scripts/                    # Startup scripts
+│   └── start.js                # Cross-platform launcher
 │
-├── test-connection.sh          # Connection test script
-├── API_MISMATCHES.md          # API documentation
-├── SECURITY.md                 # Security documentation
-├── SETUP_COMPLETE.md          # Setup completion status
+├── app.sh                      # Mac/Linux startup script
+├── app.bat                     # Windows startup script
 └── README.md                   # This file
 ```
 
 ---
 
-## 🔌 **API Endpoints**
+## 🔌 **API Documentation**
 
-### **Health Check**
+For complete API documentation, see:
 
-- `GET /api/health` - Service health status
+- **Backend API:** `backend/README.md`
+- **Frontend API Integration:** `frontend/README.md`
 
-### **Booking Endpoints**
+**Main Endpoints:**
 
-- `POST /api/bookings/search` - Search booking by reference or passport (case-insensitive)
-- `GET /api/bookings/{bookingId}` - Get booking details (case-insensitive)
+- Booking search and retrieval
+- Seat map and assignments
+- Baggage check-in
+- Flight information (with airline and aircraft details)
+- Boarding pass generation (with airline and aircraft information)
 
-### **Seat Endpoints**
-
-- `GET /api/flights/{flightId}/seats` - Get seat map for a flight
-- `GET /api/flights/{flightId}/seats/assignments` - Get seat assignments with passenger details
-- `POST /api/flights/{flightId}/seats/{seatId}/lock` - Lock a seat (30s TTL)
-- `POST /api/flights/{flightId}/seats/{seatId}/confirm` - Confirm seat selection (auto-releases old seats)
-- `DELETE /api/flights/{flightId}/seats/{seatId}/unlock?sessionId={sessionId}` - Release seat lock
-
-### **Baggage Endpoints**
-
-- `POST /api/bookings/{bookingId}/baggage` - Check in baggage (case-insensitive booking lookup)
-- `GET /api/flights/{flightId}/baggage/count` - Get baggage count for a flight
-
-### **Boarding Pass Endpoints**
-
-- `POST /api/bookings/{bookingId}/boarding-pass` - Generate boarding pass (case-insensitive)
-- `GET /api/bookings/{bookingId}/boarding-pass/pdf` - Download boarding pass PDF
+**WebSocket:** Real-time updates for seat status and baggage counts
 
 ---
 
-## 🌐 **WebSocket Endpoints**
+## 🔬 **Concurrency Features**
 
-- **WebSocket URL:** `ws://localhost:8080/ws`
-- **Topics:**
-  - `/topic/flights/{flightId}/seats` - Real-time seat status updates
-  - `/topic/flights/{flightId}/baggage` - Real-time baggage count updates
-
----
-
-## 🔬 **Concurrency Solutions**
-
-| Challenge                            | Solution                                               |
-| ------------------------------------ | ------------------------------------------------------ |
-| **Race Condition on Seat Selection** | Pessimistic lock with TTL (30s) + synchronized methods |
-| **Stale Seat Map**                   | WebSocket/STOMP for real-time updates                  |
-| **Partial Failure**                  | Database transactions with rollback                    |
-| **Simultaneous Baggage Updates**     | Atomic SQL increments + REPEATABLE_READ isolation      |
-| **Multiple Seats Per Booking**       | Automatic seat replacement on confirm                  |
-| **Case-Sensitivity Issues**          | Case-insensitive queries with normalization            |
+- **Pessimistic Locking** - Seat locks with 30s TTL
+- **Real-Time Updates** - WebSocket/STOMP for instant synchronization
+- **Atomic Operations** - Database transactions with REPEATABLE_READ isolation
+- **Thread-Safe** - Synchronized methods and proper concurrency control
 
 ---
 
-## 🎓 **PRG4201E LO3 Alignment**
+## 📈 **Status**
 
-| LO3 Requirement                 | Evidence                                                        |
-| ------------------------------- | --------------------------------------------------------------- |
-| **Synchronization Mechanisms**  | Pessimistic locking, synchronized blocks, database transactions |
-| **Real-Time Data Distribution** | WebSocket/STOMP mechanism                                       |
-| **Petri Net Modeling**          | Included in plan                                                |
-| **Workload Matrix**             | 50-100 kiosks, peak load                                        |
-| **Code Extracts**               | Backend Java code in plan                                       |
-
----
-
-## 📈 **Current Status**
-
-| Phase                    | Status      |
-| ------------------------ | ----------- |
-| Documentation & Planning | ✅ Complete |
-| Backend Development      | ✅ Complete |
-| Frontend Development     | ✅ Complete |
-| Concurrency Features     | ✅ Complete |
-| Real-Time Updates        | ✅ Complete |
-| Input Validation         | ✅ Complete |
-| Seat Management          | ✅ Complete |
-| Seat Assignments API     | ✅ Complete |
-| Java 21 Setup Fix        | ✅ Complete |
-| Testing                  | ⏳ Planned  |
-| Final Submission         | 🎯 Week 7   |
+✅ **Complete:** Backend, Frontend, Concurrency Features, Real-Time Updates  
+⏳ **In Progress:** Testing
 
 ## 🔧 **Troubleshooting**
 
-### **Java Version Issues**
-
-If you encounter Java compilation errors:
-
-1. **Use the convenience script** (easiest):
-
-   ```bash
-   cd backend
-   ./run.sh
-   ```
-
-2. **Use the shell function**:
-
-   ```bash
-   java21  # Switch to Java 21
-   ```
-
-3. **Manual setup**:
-
-   ```bash
-   cd backend
-   source ./set-java21.sh
-   ```
-
-4. **For detailed help**, see: `backend/JAVA_SETUP.md`
-
-### **Database Connection Issues**
-
-- Ensure PostgreSQL is running: `brew services start postgresql@17`
-- Verify database exists: `psql -U postgres -l | grep airport_kiosk`
-- Check credentials in `backend/src/main/resources/application.properties`
-
-### **Frontend Connection Issues**
-
-- Ensure backend is running on `http://localhost:8080`
-- Check browser console for WebSocket connection errors
-- Verify CORS settings if accessing from different origin
+**Java Issues:** Use `backend/run.sh` or see `backend/JAVA_SETUP.md`  
+**Database Issues:** Ensure PostgreSQL is running and credentials are correct  
+**Connection Issues:** Verify backend is running on `http://localhost:8080`
 
 ---
 

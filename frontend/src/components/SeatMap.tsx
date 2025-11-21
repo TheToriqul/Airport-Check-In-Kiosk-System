@@ -229,7 +229,19 @@ export default function SeatMap() {
                 <h1 className="text-3xl font-extrabold text-gray-900">Select Your Seat</h1>
                 <div className="flex items-center gap-2 mt-1 text-gray-600 font-medium">
                   <Plane className="w-5 h-5 text-primary-600" />
+                  {flight?.airlineName && (
+                    <>
+                      <span className="font-semibold">{flight.airlineName}</span>
+                      <span className="mx-1">•</span>
+                    </>
+                  )}
                   <span className="font-semibold">{flight?.flightNumber}</span>
+                  {flight?.aircraftType && (
+                    <>
+                      <span className="mx-1">•</span>
+                      <span className="text-xs font-normal">{flight.aircraftType}</span>
+                    </>
+                  )}
                   <ArrowRight className="w-4 h-4" />
                   <span>{flight?.departureAirport}</span>
                   <span className="text-primary-600">→</span>
@@ -565,7 +577,17 @@ export default function SeatMap() {
                         <Plane className="w-4 h-4" />
                         <p className="text-xs font-semibold uppercase">Flight</p>
                       </div>
+                      {flight.airlineName && (
+                        <p className="text-sm font-semibold text-gray-700 mb-1">
+                          {flight.airlineName}
+                        </p>
+                      )}
                       <p className="text-lg font-bold text-gray-900">{flight.flightNumber}</p>
+                      {flight.aircraftType && (
+                        <p className="text-xs font-medium text-gray-500 mb-1">
+                          {flight.aircraftType}
+                        </p>
+                      )}
                       <p className="text-sm text-gray-600">
                         {flight.departureAirport} → {flight.arrivalAirport}
                       </p>

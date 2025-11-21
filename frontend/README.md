@@ -123,40 +123,60 @@ frontend/
 ### 2. Seat Selection
 
 - Interactive seat map with real-time updates via WebSocket
+- Professional two-column layout:
+  - **Left Column**: Seat map with cockpit, class indicators, and seat legend
+  - **Right Column**: Passenger details and confirmation panel
 - Visual indicators for seat status:
   - **Green**: Available
   - **Yellow**: Locked by another user
   - **Red**: Reserved/Occupied
   - **Blue**: Selected (your current selection)
+- Class-based seat styling (First, Business, Economy)
 - Seat locking with TTL (30 seconds)
 - Automatic unlock of previous seat when selecting a new one
 - One seat per booking enforcement
 - WebSocket integration for live updates across all kiosks
+- Comprehensive passenger information display
 
 ### 3. Baggage Check-In
 
+- Professional two-column layout:
+  - **Left Column**: Statistics, guidelines, and baggage information
+  - **Right Column**: Check-in form with passenger details
+- Real-time baggage count display with WebSocket updates
 - Enter baggage count (1-10) and weight (0.1-1000 kg)
-- Real-time baggage count updates via WebSocket
 - Skip option for passengers without baggage
 - Input validation and error handling
+- Passenger-wise baggage updates (replaces existing record if passenger checks in again)
 
 ### 4. Boarding Pass
 
+- Modern ticket-style design with perforated edge effect
 - Generate boarding pass with QR code
+- Two-column layout with:
+  - **Left Column**: Passenger info, booking reference, route
+  - **Right Column**: Seat details, baggage info, gate, boarding time
 - Print and download functionality
-- Beautiful, printable design
+- Beautiful, printable design optimized for standard paper sizes
 - Displays all flight and passenger information
+- Available both as a dedicated page and in a modal (Flight Details page)
 
 ### 5. Flight Information & Seat Assignments
 
-- View flight schedules and details
-- Real-time seat assignments table showing:
-  - Passenger name and email
-  - Seat number and class
+- View all flights sorted by departure time (from today to future)
+- Real-time flight details including:
+  - Flight number, route, departure/arrival times
+  - Available seats count
+  - Total baggage count
+- Comprehensive passenger manifest table showing:
+  - Passenger name, email, phone
+  - Seat number and class (or "Not assigned")
   - Booking reference
   - Passport number
-- Passenger manifest for each flight
-- Click on any flight to see detailed seat assignments
+  - Baggage count and weight
+- **View Pass** button to display boarding pass in a modal
+- Dynamic navigation with context-aware back buttons
+- Professional table layout with responsive design
 
 ## Development
 
@@ -179,9 +199,10 @@ The frontend communicates with the backend through:
 ### REST API (via `services/api.ts`)
 
 - Booking search and retrieval
+- Flight information (all flights, flight by ID)
 - Seat map and assignments
 - Seat locking and confirmation
-- Baggage check-in
+- Baggage check-in and debug information
 - Boarding pass generation
 
 ### WebSocket (via `services/websocket.ts`)

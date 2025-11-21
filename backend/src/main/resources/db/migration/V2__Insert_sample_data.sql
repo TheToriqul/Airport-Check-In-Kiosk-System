@@ -1,14 +1,21 @@
 -- Insert sample flight data
+-- Note: airline_name will be added by V4 migration, aircraft_type will be added by V5 migration
 INSERT INTO flights (flight_id, flight_number, departure_airport, arrival_airport, departure_time, arrival_time, total_seats, available_seats, flight_status) VALUES
-('FL001', 'AA101', 'JFK', 'LAX', '2025-12-01 08:00:00', '2025-12-01 11:30:00', 150, 150, 'SCHEDULED'),
-('FL002', 'AA202', 'LAX', 'JFK', '2025-12-01 14:00:00', '2025-12-01 22:30:00', 200, 200, 'SCHEDULED'),
-('FL003', 'UA301', 'ORD', 'SFO', '2025-12-01 10:00:00', '2025-12-01 13:00:00', 180, 180, 'SCHEDULED');
+('FL001', 'MH101', 'KUL', 'SIN', '2025-12-10 08:00:00', '2025-12-10 09:00:00', 150, 150, 'SCHEDULED'),
+('FL002', 'MH202', 'KUL', 'BKK', '2025-12-15 14:00:00', '2025-12-15 15:30:00', 200, 200, 'SCHEDULED'),
+('FL003', 'MH301', 'KUL', 'DXB', '2025-12-20 10:00:00', '2025-12-20 13:30:00', 180, 180, 'SCHEDULED'),
+('FL004', 'MH404', 'KUL', 'LHR', '2025-12-25 22:00:00', '2025-12-26 06:00:00', 300, 300, 'SCHEDULED');
 
--- Insert sample booking
+-- Insert sample booking (all passport numbers are 9 characters: P + 8 digits)
 INSERT INTO bookings (booking_id, passenger_name, passport_number, email, phone, flight_id, booking_status) VALUES
 ('BK001', 'John Doe', 'P12345678', 'john.doe@email.com', '+1234567890', 'FL001', 'CONFIRMED'),
 ('BK002', 'Jane Smith', 'P87654321', 'jane.smith@email.com', '+0987654321', 'FL001', 'CONFIRMED'),
-('BK003', 'Bob Johnson', 'P11223344', 'bob.johnson@email.com', '+1122334455', 'FL002', 'CONFIRMED');
+('BK003', 'Bob Johnson', 'P11223344', 'bob.johnson@email.com', '+1122334455', 'FL002', 'CONFIRMED'),
+('BK004', 'Alice Williams', 'P45678901', 'alice.williams@email.com', '+1234567891', 'FL001', 'CONFIRMED'),
+('BK005', 'Charlie Brown', 'P56789012', 'charlie.brown@email.com', '+1234567892', 'FL002', 'CONFIRMED'),
+('BK006', 'Diana Prince', 'P67890123', 'diana.prince@email.com', '+1234567893', 'FL002', 'CONFIRMED'),
+('BK007', 'Edward Norton', 'P78901234', 'edward.norton@email.com', '+1234567894', 'FL003', 'CONFIRMED'),
+('BK008', 'Fiona Apple', 'P89012345', 'fiona.apple@email.com', '+1234567895', 'FL003', 'CONFIRMED');
 
 -- Insert sample seats for FL001 (150 seats: 10 rows x 15 seats per row)
 DO $$

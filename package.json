@@ -1,0 +1,25 @@
+{
+  "name": "airport-check-in-kiosk-system",
+  "version": "1.0.0",
+  "description": "Airport Check-In Kiosk System - Full Stack Application",
+  "scripts": {
+    "start": "node scripts/start.js",
+    "dev": "node scripts/start.js",
+    "backend": "cd backend && ./run.sh",
+    "frontend": "cd frontend && npm run dev",
+    "install:all": "npm install && cd frontend && npm install",
+    "build": "cd backend && mvn clean install && cd ../frontend && npm run build"
+  },
+  "keywords": [
+    "airport",
+    "kiosk",
+    "check-in",
+    "spring-boot",
+    "react"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

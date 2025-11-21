@@ -109,13 +109,17 @@ backend/
 │   │   │   │   ├── BaggageController.java
 │   │   │   │   ├── BoardingPassController.java
 │   │   │   │   ├── BookingController.java
+│   │   │   │   ├── FlightController.java
 │   │   │   │   ├── HealthController.java
 │   │   │   │   └── SeatController.java
 │   │   │   ├── service/         # Business logic with concurrency control
 │   │   │   │   ├── BaggageService.java
 │   │   │   │   ├── BoardingPassService.java
 │   │   │   │   ├── BookingService.java
+│   │   │   │   ├── FlightService.java
 │   │   │   │   └── SeatService.java
+│   │   │   ├── scheduler/       # Scheduled tasks
+│   │   │   │   └── SeatLockCleanupScheduler.java
 │   │   │   ├── repository/      # JPA repositories
 │   │   │   │   ├── BaggageRepository.java
 │   │   │   │   ├── BookingRepository.java
@@ -142,7 +146,8 @@ backend/
 │   │       ├── application.properties
 │   │       └── db/migration/   # Flyway migration scripts
 │   │           ├── V1__Initial_schema.sql
-│   │           └── V2__Insert_sample_data.sql
+│   │           ├── V2__Insert_sample_data.sql
+│   │           └── V3__Add_unique_booking_constraint.sql
 │   └── test/                    # Test classes
 └── pom.xml
 ```
@@ -156,6 +161,7 @@ backend/
 - `POST /api/bookings/search` - Search booking by reference or passport (case-insensitive)
   - Request body: `{ "bookingReference": "BK001" }` or `{ "passportNumber": "P12345678" }`
 - `GET /api/bookings/{bookingId}` - Get booking details (case-insensitive)
+- `GET /api/bookings/flight/{flightId}` - Get all bookings for a specific flight
 
 ### Seat Endpoints
 - `GET /api/flights/{flightId}/seats` - Get seat map with available count
@@ -169,7 +175,13 @@ backend/
 ### Baggage Endpoints
 - `POST /api/bookings/{bookingId}/baggage` - Check in baggage (case-insensitive booking lookup)
   - Request body: `{ "weight": 23.5, "count": 2 }`
+  - **Note:** If a passenger already has baggage checked in, the existing record is updated (passenger-wise update)
 - `GET /api/flights/{flightId}/baggage/count` - Get baggage count for a flight
+- `GET /api/flights/{flightId}/baggage/debug` - Get detailed baggage debug information (includes flight count, record count, and all records)
+
+### Flight Endpoints
+- `GET /api/flights` - Get all flights (sorted by departure time, ascending)
+- `GET /api/flights/{flightId}` - Get flight details by ID
 
 ### Boarding Pass Endpoints
 - `POST /api/bookings/{bookingId}/boarding-pass` - Generate boarding pass (case-insensitive)
@@ -197,6 +209,8 @@ backend/
 - **Atomic Operations**: Uses `synchronized` methods and atomic SQL increments
 - **Transaction Isolation**: `REPEATABLE_READ` isolation level
 - **Real-time Sync**: WebSocket broadcasts baggage count updates
+- **Passenger-wise Updates**: Each booking can have only one baggage record, but the `baggageCount` field can represent multiple bags
+- **Automatic Cleanup**: Duplicate baggage records are automatically cleaned up, keeping only the most recent one per booking
 
 ### Input Validation
 - **Case-Insensitive Search**: Booking references and passport numbers are normalized
@@ -252,10 +266,15 @@ server.port=8081
 
 ## Sample Data
 
-The migration script `V2__Insert_sample_data.sql` includes:
-- **Flights**: FL001, FL002, FL003
-- **Bookings**: BK001, BK002, BK003
-- **Seats**: Multiple seats per flight (Economy, Business, First class)
+The migration scripts include:
+- **V2__Insert_sample_data.sql**: Initial sample data
+  - **Flights**: FL001, FL002, FL003, FL004
+  - **Bookings**: BK001, BK002, BK003
+  - **Seats**: Multiple seats per flight (Economy, Business, First class)
+- **V3__Add_unique_booking_constraint.sql**: 
+  - Cleans up duplicate baggage records
+  - Adds unique constraint on `booking_id` in `baggage_records` table
+  - Ensures only one baggage record per booking
 
 ## License
 

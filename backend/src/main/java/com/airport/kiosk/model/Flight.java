@@ -1,11 +1,18 @@
 package com.airport.kiosk.model;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "flights")
@@ -20,6 +27,12 @@ public class Flight {
     
     @Column(name = "flight_number", nullable = false, length = 20)
     private String flightNumber;
+    
+    @Column(name = "airline_name", length = 100)
+    private String airlineName;
+    
+    @Column(name = "aircraft_type", length = 50)
+    private String aircraftType;
     
     @Column(name = "departure_airport", nullable = false, length = 10)
     private String departureAirport;

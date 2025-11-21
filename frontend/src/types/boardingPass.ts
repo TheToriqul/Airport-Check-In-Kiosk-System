@@ -2,6 +2,8 @@ export interface BoardingPass {
   bookingId: string;
   passengerName: string;
   flightNumber: string;
+  airlineName?: string;
+  aircraftType?: string;
   seatNumber: string;
   departureAirport: string;
   arrivalAirport: string;

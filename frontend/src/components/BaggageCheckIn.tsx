@@ -138,7 +138,19 @@ export default function BaggageCheckIn() {
                 {flight && (
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Plane className="w-4 h-4" />
+                    {flight.airlineName && (
+                      <>
+                        <span className="font-medium">{flight.airlineName}</span>
+                        <span className="mx-1">•</span>
+                      </>
+                    )}
                     <span className="font-medium">{flight.flightNumber}</span>
+                    {flight.aircraftType && (
+                      <>
+                        <span className="mx-1">•</span>
+                        <span className="text-xs">{flight.aircraftType}</span>
+                      </>
+                    )}
                     <span className="mx-1">•</span>
                     <span>
                       {flight.departureAirport} → {flight.arrivalAirport}
@@ -239,22 +251,32 @@ export default function BaggageCheckIn() {
                 </div>
                 <h3 className="text-base font-bold text-gray-900">Baggage Guidelines</h3>
               </div>
-              <div className="space-y-2 text-xs text-gray-700">
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Maximum 10 bags per passenger</p>
+              <div className="space-y-2.5 text-xs text-gray-700 leading-relaxed">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
+                  <p className="text-gray-700">Maximum 10 bags per passenger</p>
                 </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Standard weight limit: 23kg per bag</p>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
+                  <p className="text-gray-700">Single baggage: 25KG (Standard weight limit)</p>
                 </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Oversized items may incur fees</p>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
+                  <p className="text-gray-700">Multiple baggage: 40KG (Standard weight limit)</p>
                 </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Prohibited items not allowed</p>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
+                  <p className="text-gray-700">
+                    Excess baggage (over 40KG): $50 per additional 5KG
+                  </p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
+                  <p className="text-gray-700">Oversized items may incur additional fees</p>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <div className="w-1.5 h-1.5 bg-blue-600 rounded-full mt-1.5 flex-shrink-0"></div>
+                  <p className="text-gray-700">Prohibited items are not allowed</p>
                 </div>
               </div>
             </div>

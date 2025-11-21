@@ -49,6 +49,8 @@ public class BoardingPassService {
         boardingPass.put("bookingId", booking.getBookingId());
         boardingPass.put("passengerName", booking.getPassengerName());
         boardingPass.put("flightNumber", flight.getFlightNumber());
+        boardingPass.put("airlineName", flight.getAirlineName());
+        boardingPass.put("aircraftType", flight.getAircraftType());
         boardingPass.put("seatNumber", seat.getSeatNumber());
         boardingPass.put("departureAirport", flight.getDepartureAirport());
         boardingPass.put("arrivalAirport", flight.getArrivalAirport());

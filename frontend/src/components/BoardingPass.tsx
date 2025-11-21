@@ -146,6 +146,11 @@ export default function BoardingPass() {
                   />
                   <div>
                     <h1 className="text-2xl font-bold tracking-wide mb-1">BOARDING PASS</h1>
+                    {boardingPass.airlineName && (
+                      <p className="text-xs font-medium text-blue-100 print:text-gray-600 mb-1">
+                        {boardingPass.airlineName}
+                      </p>
+                    )}
                     <p className="text-sm font-semibold text-blue-100 print:text-gray-700 mb-1">
                       {boardingPass.flightNumber}
                     </p>
@@ -209,6 +214,11 @@ export default function BoardingPass() {
                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
                       FLIGHT
                     </p>
+                    {boardingPass.airlineName && (
+                      <p className="text-xs font-medium text-gray-600 mb-1">
+                        {boardingPass.airlineName}
+                      </p>
+                    )}
                     <p className="text-base font-semibold text-gray-900">
                       {boardingPass.flightNumber}
                     </p>
@@ -308,6 +318,18 @@ export default function BoardingPass() {
                     </div>
                   )}
                 </div>
+
+                {/* Aircraft Type - Third Row */}
+                {boardingPass.aircraftType && (
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                      AIRCRAFT
+                    </p>
+                    <p className="text-base font-semibold text-gray-900">
+                      {boardingPass.aircraftType}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -1,6 +1,8 @@
 export interface Flight {
   flightId: string;
   flightNumber: string;
+  airlineName?: string;
+  aircraftType?: string;
   departureAirport: string;
   arrivalAirport: string;
   departureTime: string;

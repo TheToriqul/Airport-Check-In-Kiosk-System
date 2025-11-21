@@ -275,9 +275,21 @@ export default function FlightDetailsPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-2xl font-bold text-gray-900">
-                              {flight.flightNumber}
-                            </h3>
+                            <div>
+                              {flight.airlineName && (
+                                <p className="text-sm font-medium text-gray-600 mb-1">
+                                  {flight.airlineName}
+                                </p>
+                              )}
+                              <h3 className="text-2xl font-bold text-gray-900">
+                                {flight.flightNumber}
+                              </h3>
+                              {flight.aircraftType && (
+                                <p className="text-xs font-medium text-gray-500 mt-1">
+                                  {flight.aircraftType}
+                                </p>
+                              )}
+                            </div>
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(flight.flightStatus)}`}
                             >
@@ -332,9 +344,19 @@ export default function FlightDetailsPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-4">
                   <div className="text-left">
+                    {selectedFlight.airlineName && (
+                      <p className="text-sm font-medium text-gray-600 mb-1">
+                        {selectedFlight.airlineName}
+                      </p>
+                    )}
                     <h2 className="text-2xl font-bold text-gray-900">
                       {selectedFlight.flightNumber}
                     </h2>
+                    {selectedFlight.aircraftType && (
+                      <p className="text-xs font-medium text-gray-500 mt-1">
+                        {selectedFlight.aircraftType}
+                      </p>
+                    )}
                     <p className="text-sm text-gray-600">
                       {selectedFlight.departureAirport} → {selectedFlight.arrivalAirport}
                     </p>
@@ -614,6 +636,11 @@ export default function FlightDetailsPage() {
                               <h1 className="text-2xl font-bold tracking-wide mb-1">
                                 BOARDING PASS
                               </h1>
+                              {boardingPass.airlineName && (
+                                <p className="text-xs font-medium text-blue-100 mb-1">
+                                  {boardingPass.airlineName}
+                                </p>
+                              )}
                               <p className="text-sm font-semibold text-blue-100 mb-1">
                                 {boardingPass.flightNumber}
                               </p>
@@ -669,6 +696,11 @@ export default function FlightDetailsPage() {
                               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
                                 FLIGHT
                               </p>
+                              {boardingPass.airlineName && (
+                                <p className="text-xs font-medium text-gray-600 mb-1">
+                                  {boardingPass.airlineName}
+                                </p>
+                              )}
                               <p className="text-base font-semibold text-gray-900">
                                 {boardingPass.flightNumber}
                               </p>
@@ -775,6 +807,18 @@ export default function FlightDetailsPage() {
                               </div>
                             )}
                           </div>
+
+                          {/* Aircraft Type - Third Row */}
+                          {boardingPass.aircraftType && (
+                            <div>
+                              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                                AIRCRAFT
+                              </p>
+                              <p className="text-base font-semibold text-gray-900">
+                                {boardingPass.aircraftType}
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
 
